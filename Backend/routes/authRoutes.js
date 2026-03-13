@@ -1,28 +1,17 @@
-import express from 'express';
-import {
-    registerAdmin, loginAdmin,
-    registerStaff, loginStaff,
-    registerUser, loginUser
-} from '../controllers/authController.js';
-
+const express = require('express');
 const router = express.Router();
+const authController = require('../controllers/authController');
 
-// ---------------------------------------------------------
-// Admin Routes
-// ---------------------------------------------------------
-router.post('/admin/register', registerAdmin);
-router.post('/admin/login', loginAdmin);
+// Municipal Admin routes
+router.post('/admin/register', authController.registerAdmin);
+router.post('/admin/login', authController.loginAdmin);
 
-// ---------------------------------------------------------
-// Ward Staff Routes
-// ---------------------------------------------------------
-router.post('/ward/register', registerStaff);
-router.post('/ward/login', loginStaff);
+// Ward Staff routes
+router.post('/ward/register', authController.registerWardStaff);
+router.post('/ward/login', authController.loginWardStaff);
 
-// ---------------------------------------------------------
-// User (Citizen) Routes
-// ---------------------------------------------------------
-router.post('/user/register', registerUser);
-router.post('/user/login', loginUser);
+// User (Citizen) routes
+router.post('/user/register', authController.registerUser);
+router.post('/user/login', authController.loginUser);
 
-export default router;
+module.exports = router;

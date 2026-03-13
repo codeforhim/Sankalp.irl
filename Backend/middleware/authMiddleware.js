@@ -1,20 +1,34 @@
-import jwt from 'jsonwebtoken';
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
-const authMiddleware = (req, res, next) => {
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    // Format: Bearer <token>
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ message: 'Access denied. No token provided.' });
+    }
+
     try {
-        const token = req.header('Authorization')?.replace('Bearer ', '');
-        
-        if (!token) {
-            return res.status(401).json({ error: 'Authentication token missing or malformed' });
-        }
-
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded; // Contains id and role (e.g., 'admin', 'staff', 'user')
-        
+        req.user = decoded;
         next();
-    } catch (error) {
-        res.status(401).json({ error: 'Invalid or expired token' });
+    } catch (err) {
+        res.status(403).json({ message: 'Invalid token.' });
     }
 };
 
-export default authMiddleware;
+const restrictToRole = (roles) => {
+    return (req, res, next) => {
+        if (!req.user || !roles.includes(req.user.role)) {
+            return res.status(403).json({ message: 'Access denied. Insufficient permissions.' });
+        }
+        next();
+    };
+};
+
+module.exports = {
+    authenticateToken,
+    restrictToRole
+};
