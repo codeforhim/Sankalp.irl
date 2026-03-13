@@ -6,6 +6,9 @@ import io
 import logging
 import os
 
+from dotenv import load_dotenv
+load_dotenv() # Load variables from .env BEFORE importing ai_models
+
 from ai_models import detect_fake_image, verify_issue_resolution
 
 logging.basicConfig(level=logging.INFO)
@@ -67,4 +70,4 @@ async def verify_issue(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8080)

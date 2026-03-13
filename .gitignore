@@ -8,7 +8,7 @@ __pycache__/
 venv/
 evnv/
 env/
-.env/
+.env
 .venv/
 
 # Distribution / packaging
