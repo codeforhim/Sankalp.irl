@@ -4,48 +4,69 @@ import api from '../utils/api';
 
 const CitizenPortal = () => {
     const [complaintText, setComplaintText] = useState('');
-    const [file, setFile] = useState(null);
+    const [imageFile, setImageFile] = useState(null);
+    const [audioFile, setAudioFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [aiCategory, setAiCategory] = useState('');
     const [recentComplaints, setRecentComplaints] = useState([]);
 
+    const fetchComplaints = async () => {
+        try {
+            const res = await api.get('/complaints/my');
+            setRecentComplaints(res.data);
+        } catch (error) {
+            console.error("Error fetching complaints:", error);
+        }
+    };
+
     useEffect(() => {
-        // Mocking fetching recent complaints for the current user
-        // In a real app, we would have an endpoint for this.
-        setRecentComplaints([
-            { id: 1, issue_type: 'Pothole', status: 'resolved', text_input: 'Huge hole near the park entry' },
-            { id: 2, issue_type: 'Sanitation', status: 'assigned', text_input: 'Garbage dump accumulating' }
-        ]);
+        fetchComplaints();
     }, []);
 
-    const handleFileChange = (e) => {
+    const handleImageChange = (e) => {
         if (e.target.files && e.target.files[0]) {
-            setFile(e.target.files[0]);
+            setImageFile(e.target.files[0]);
+        }
+    };
+
+    const handleAudioChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setAudioFile(e.target.files[0]);
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!complaintText) return alert("Please describe the issue.");
+        if (!complaintText && !audioFile && !imageFile) return alert("Please provide some input (text, audio, or image).");
 
         setLoading(true);
         const formData = new FormData();
-        formData.append('text_input', complaintText);
-        if (file) formData.append('image', file);
+        if (complaintText) formData.append('text_input', complaintText);
+        if (imageFile) formData.append('image', imageFile);
+        if (audioFile) formData.append('audio', audioFile);
         
         // Mock location for demo purposes (Delhi Central)
         formData.append('latitude', 28.6139);
         formData.append('longitude', 77.2090);
-        formData.append('issue_type', 'road_damage'); // Default or AI predicted
 
         try {
-            await api.post('/complaints/create', formData, {
+            const res = await api.post('/complaints/create', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setSuccess(true);
+            setAiCategory(`${res.data.complaint.issue_type} -> Assigned to: ${res.data.department || 'Default Department'}`);
             setComplaintText('');
-            setFile(null);
-            setTimeout(() => setSuccess(false), 5000);
+            setImageFile(null);
+            setAudioFile(null);
+            
+            // Refresh complaint list to show the newly submitted one
+            fetchComplaints();
+            
+            setTimeout(() => {
+                setSuccess(false);
+                setAiCategory('');
+            }, 8000);
         } catch (err) {
             console.error("Submission failed:", err);
             alert("Failed to submit report. Please try again.");
@@ -76,24 +97,32 @@ const CitizenPortal = () => {
                     <h2 className="text-lg font-semibold text-white border-b border-white/10 pb-2">Smart Issue Reporting</h2>
 
                     {success && (
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3 rounded-lg flex items-center">
-                            <CheckCircle className="w-5 h-5 mr-2" />
-                            Report successfully submitted and anchored on-chain!
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-lg flex flex-col items-start space-y-2">
+                            <div className="flex items-center">
+                                <CheckCircle className="w-5 h-5 mr-2" />
+                                <span className="font-semibold">Report successfully submitted!</span>
+                            </div>
+                            <div className="pl-7 text-sm">
+                                Issue categorized as: <span className="font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded">{aiCategory}</span>
+                            </div>
                         </div>
                     )}
 
                     <div className="grid grid-cols-2 gap-4">
-                        <label className={`group flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl transition cursor-pointer ${file ? 'border-emerald-500 bg-emerald-500/5' : 'border-slate-700 hover:border-indigo-500 hover:bg-indigo-500/5'}`}>
-                            <Camera className={`w-8 h-8 mb-2 transition ${file ? 'text-emerald-400' : 'text-slate-500 group-hover:text-indigo-400'}`} />
-                            <span className={`text-sm font-medium transition ${file ? 'text-emerald-300' : 'text-slate-400 group-hover:text-indigo-300'}`}>
-                                {file ? file.name : 'Upload Photo/Video'}
+                        <label className={`group flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl transition cursor-pointer ${imageFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-slate-700 hover:border-indigo-500 hover:bg-indigo-500/5'}`}>
+                            <Camera className={`w-8 h-8 mb-2 transition ${imageFile ? 'text-emerald-400' : 'text-slate-500 group-hover:text-indigo-400'}`} />
+                            <span className={`text-sm font-medium transition text-center ${imageFile ? 'text-emerald-300' : 'text-slate-400 group-hover:text-indigo-300'}`}>
+                                {imageFile ? imageFile.name : 'Upload Photo'}
                             </span>
-                            <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                            <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                         </label>
-                        <button type="button" className="group flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-700 rounded-xl hover:border-rose-500 hover:bg-rose-500/5 transition">
-                            <Mic className="w-8 h-8 text-slate-500 group-hover:text-rose-400 mb-2 transition" />
-                            <span className="text-sm font-medium text-slate-400 group-hover:text-rose-300 transition">Record Voice</span>
-                        </button>
+                        <label className={`group flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl transition cursor-pointer ${audioFile ? 'border-amber-500 bg-amber-500/5' : 'border-slate-700 hover:border-rose-500 hover:bg-rose-500/5'}`}>
+                            <Mic className={`w-8 h-8 mb-2 transition ${audioFile ? 'text-amber-400' : 'text-slate-500 group-hover:text-rose-400'}`} />
+                            <span className={`text-sm font-medium transition text-center ${audioFile ? 'text-amber-300' : 'text-slate-400 group-hover:text-rose-300'}`}>
+                                {audioFile ? audioFile.name : 'Upload Voice Note'}
+                            </span>
+                            <input type="file" className="hidden" accept="audio/*" onChange={handleAudioChange} />
+                        </label>
                     </div>
 
                     <div className="relative">
@@ -113,9 +142,9 @@ const CitizenPortal = () => {
                     <button 
                         type="submit" 
                         disabled={loading}
-                        className={`w-full font-semibold py-3.5 rounded-xl transition shadow-lg ${loading ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-500/20'}`}
+                        className={`w-full font-semibold py-3.5 rounded-xl transition shadow-lg ${loading ? 'bg-indigo-900/50 text-indigo-200 cursor-not-allowed border border-indigo-500/30' : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-500/20'}`}
                     >
-                        {loading ? 'Processing through AI...' : 'Submit Report'}
+                        {loading ? 'Analyzing issue with AI...' : 'Submit Report'}
                     </button>
                 </form>
 
