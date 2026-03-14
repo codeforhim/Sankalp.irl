@@ -10,13 +10,14 @@ services:
     volumes:
       - ./Backend:/app
       - /app/node_modules
+      - ./Feature2:/app/Feature2
+    environment:
+      - NODE_OPTIONS=--dns-result-order=ipv4first
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
     env_file:
       - ./Backend/.env
     depends_on:
-      db:
-        condition: service_healthy
-      ai-service:
-        condition: service_started
+      - ai-service
 
   ai-service:
     build:
@@ -47,36 +48,14 @@ services:
       - "8081:8080"
     volumes:
       - ./Feature3:/app
+    environment:
+      - NODE_OPTIONS=--dns-result-order=ipv4first
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
     env_file:
       - ./Backend/.env
     depends_on:
       - backend
 
-  db:
-    image: postgis/postgis:15-3.3
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-sankalp_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sankalp_password}
-      POSTGRES_DB: ${POSTGRES_DB:-sankalp_db}
-    ports:
-      - "5432:5432"
-    volumes:
-      - db_data:/var/lib/postgresql/data
-      - ./Backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sankalp_user} -d ${POSTGRES_DB:-sankalp_db}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
-    depends_on:
-      db:
-        condition: service_healthy
-
-volumes:
-  db_data:
+networks:
+  default:
+    name: sankalp_network
