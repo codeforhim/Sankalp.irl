@@ -205,8 +205,61 @@ const updateComplaintStatus = async (req, res) => {
             return res.status(404).json({ message: 'Complaint not found' });
         }
 
+        const complaint = updatedComplaint.rows[0];
         console.log(`Successfully updated complaint ${id} to ${status}`);
-        res.json({ message: 'Status updated successfully', complaint: updatedComplaint.rows[0] });
+
+        // Fire-and-forget: Generate AI communication messages
+        // RULE: Only ADMIN actions go to public feed. Ward officer actions only notify the citizen.
+        const COMM_AI_URL = process.env.COMMUNICATION_AI_URL || 'http://communication-ai:8001';
+        const departmentStringMap = {
+            1: "Public Works Department (PWD)",
+            2: "Water Works Department",
+            3: "Sanitation Department",
+            4: "Electricity Department",
+            5: "Urban Planning Authority"
+        };
+        const deptName = departmentStringMap[complaint.civic_body_id] || "Municipal Services";
+        const userRole = req.user?.role || 'ward_staff';
+        const isAdminAction = (userRole === 'admin');
+
+        (async () => {
+            try {
+                // Always generate citizen notification (private to the citizen)
+                const notifRes = await axios.post(`${COMM_AI_URL}/generate/citizen-notification`, {
+                    issue_type: complaint.issue_type || 'civic issue',
+                    status: status,
+                    department: deptName,
+                }, { timeout: 15000 });
+
+                await db.query(
+                    'INSERT INTO public_updates (complaint_id, message, update_type) VALUES ($1, $2, $3)',
+                    [id, notifRes.data.message, 'citizen_notification']
+                );
+
+                // Only admin actions generate public feed updates
+                if (isAdminAction) {
+                    const statusRes = await axios.post(`${COMM_AI_URL}/generate/status-update`, {
+                        issue_type: complaint.issue_type || 'civic issue',
+                        ward_name: `Ward ${complaint.ward_id}`,
+                        department: deptName,
+                        status: status,
+                        description: complaint.text_input || '',
+                    }, { timeout: 15000 });
+
+                    await db.query(
+                        'INSERT INTO public_updates (complaint_id, message, update_type) VALUES ($1, $2, $3)',
+                        [id, statusRes.data.message, 'status_update']
+                    );
+                    console.log(`[CommAI] Admin action → public update + citizen notification for complaint ${id}`);
+                } else {
+                    console.log(`[CommAI] Ward officer action → citizen notification only for complaint ${id}`);
+                }
+            } catch (aiErr) {
+                console.error(`[CommAI] Failed for complaint ${id}:`, aiErr.message);
+            }
+        })();
+
+        res.json({ message: 'Status updated successfully', complaint });
     } catch (error) {
         console.error(`Error updating status for complaint ${req.params.id}:`, error.message);
         res.status(500).json({ message: 'Server error updating complaint' });
@@ -293,6 +346,29 @@ const verifyResolution = async (req, res) => {
                 [newStatus, afterImageUrl, aiFeedback, parseInt(complaint_id)]
             );
             console.log(`DB Update Result:`, updateRes.rowCount > 0 ? "SUCCESS" : "FAILURE (No row found)");
+
+            if (updateRes.rowCount > 0) {
+                const complaint = updateRes.rows[0];
+                const COMM_AI_URL = process.env.COMMUNICATION_AI_URL || 'http://communication-ai:8001';
+                
+                // Fire-and-forget: Notify citizen of preliminary AI assessment
+                (async () => {
+                    try {
+                        const notifRes = await axios.post(`${COMM_AI_URL}/generate/citizen-notification`, {
+                            issue_type: complaint.issue_type || 'civic issue',
+                            status: newStatus,
+                        }, { timeout: 15000 });
+
+                        await db.query(
+                            'INSERT INTO public_updates (complaint_id, message, update_type) VALUES ($1, $2, $3)',
+                            [complaint_id, notifRes.data.message, 'citizen_notification']
+                        );
+                        console.log(`[CommAI] Preliminary AI assessment notification sent for complaint ${complaint_id}`);
+                    } catch (aiErr) {
+                        console.error(`[CommAI] Failed preliminary notif for complaint ${complaint_id}:`, aiErr.message);
+                    }
+                })();
+            }
         } catch (dbErr) {
             console.error(`CRITICAL DB ERROR during status update:`, dbErr.message);
             throw dbErr;

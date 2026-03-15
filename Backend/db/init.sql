@@ -115,3 +115,12 @@ CREATE TABLE IF NOT EXISTS complaints (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 8. Public Updates Table (AI-generated communication messages)
+CREATE TABLE IF NOT EXISTS public_updates (
+    id SERIAL PRIMARY KEY,
+    complaint_id INTEGER REFERENCES complaints(id) ON DELETE CASCADE,
+    message TEXT NOT NULL,
+    update_type VARCHAR(50) NOT NULL CHECK (update_type IN ('status_update', 'citizen_notification', 'ward_summary')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);

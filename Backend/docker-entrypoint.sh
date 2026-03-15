@@ -8,4 +8,4 @@ echo "Backfilling priority scores for existing complaints..."
 node scripts/backfill_priorities.js || echo "Backfill skipped or completed."
 
 echo "Starting backend server..."
-exec npx nodemon server.js
+exec npx nodemon -L server.js

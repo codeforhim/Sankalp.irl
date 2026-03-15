@@ -21,7 +21,8 @@ RUN npm install
 # Copy the rest of the application files
 COPY . .
 
-# Make the entrypoint script executable
+# Fix Windows line endings (CRLF -> LF) and make entrypoint executable
+RUN apk add --no-cache dos2unix && dos2unix docker-entrypoint.sh && apk del dos2unix
 RUN chmod +x docker-entrypoint.sh
 
 # Expose the Express server port

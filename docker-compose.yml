@@ -18,6 +18,7 @@ services:
       - ./Backend/.env
     depends_on:
       - ai-service
+      - communication-ai
 
   ai-service:
     build:
@@ -27,6 +28,17 @@ services:
       - "8000:8000"
     volumes:
       - ./services/ai-service:/app
+
+  communication-ai:
+    build:
+      context: ./services/communication-ai
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8001"
+    volumes:
+      - ./services/communication-ai:/app
+    env_file:
+      - ./Backend/.env
 
   frontend:
     build:

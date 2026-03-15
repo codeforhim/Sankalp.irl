@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import CitizenPortal from './pages/CitizenPortal';
 import WardOfficerDashboard from './pages/WardOfficerDashboard';
 import MunicipalAdminDashboard from './pages/MunicipalAdminDashboard';
+import PublicFeed from './pages/PublicFeed';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 
@@ -31,6 +32,7 @@ const Navigation = () => {
             </Link>
             <div className="hidden md:flex items-center space-x-1">
               <Link to="/" className="text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 rounded-lg text-sm font-medium transition-all">Home</Link>
+              <Link to="/public-feed" className="text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 rounded-lg text-sm font-medium transition-all">Public Feed</Link>
               {isAuthenticated ? (
                   <>
                     <Link to="/citizen" className="text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 rounded-lg text-sm font-medium transition-all">Citizen Portal</Link>
@@ -65,6 +67,7 @@ function App() {
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Home />} />
+              <Route path="/public-feed" element={<PublicFeed />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
 

@@ -279,8 +279,8 @@ const MunicipalAdminDashboard = () => {
             if (!user?.city_id) return;
             try {
                 const response = await api.get(`/complaints/city/${user.city_id}`);
-                const flagged = response.data.filter(c => c.status === 'flagged_for_review');
-                setFlaggedComplaints(flagged);
+                const pending = response.data.filter(c => c.status === 'flagged_for_review' || c.status === 'resolved');
+                setFlaggedComplaints(pending);
             } catch (err) {
                 console.error("Failed to fetch flagged complaints:", err);
             } finally {
@@ -292,7 +292,7 @@ const MunicipalAdminDashboard = () => {
 
     const handleAdminOverride = async (complaintId, action) => {
         try {
-            const newStatus = action === 'approve' ? 'resolved' : 'rejected';
+            const newStatus = action === 'approve' ? 'verified' : 'rejected';
             await api.patch(`/complaints/status/${complaintId}`, { status: newStatus });
             setFlaggedComplaints(prev => prev.filter(c => c.id !== complaintId));
         } catch (err) {
@@ -358,10 +358,10 @@ const MunicipalAdminDashboard = () => {
                 <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-rose-500/20 p-5 shadow-lg shadow-rose-500/5">
                     <div className="flex justify-between items-center border-b border-rose-500/20 pb-3 mb-4">
                         <h2 className="text-lg font-semibold text-rose-400 flex items-center">
-                            <AlertTriangle className="w-5 h-5 mr-2" />
-                            AI Flagged Verification Queue
+                            <Activity className="w-5 h-5 mr-2" />
+                            Pending Verification Queue
                         </h2>
-                        <span className="text-xs bg-rose-500/20 text-rose-300 px-3 py-1 rounded-lg">Requires Admin Decision</span>
+                        <span className="text-xs bg-rose-500/20 text-rose-300 px-3 py-1 rounded-lg">Review AI Assessments</span>
                     </div>
 
                     {loadingFlags ? (
@@ -376,7 +376,13 @@ const MunicipalAdminDashboard = () => {
                                 <div key={complaint.id} className="bg-slate-950/50 rounded-xl border border-rose-500/30 p-4">
                                     <div className="flex justify-between items-start mb-3">
                                         <h3 className="font-bold text-slate-200 capitalize">Ward {complaint.ward_id} • {complaint.issue_type}</h3>
-                                        <span className="text-xs bg-rose-500/20 text-rose-400 px-2 py-1 rounded font-bold uppercase border border-rose-500/30">AI Rejected</span>
+                                        <span className={`text-xs px-2 py-1 rounded font-bold uppercase border ${
+                                            complaint.status === 'flagged_for_review' 
+                                            ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' 
+                                            : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                                        }`}>
+                                            {complaint.status === 'flagged_for_review' ? '🚩 AI Flagged' : '✅ Resolved'}
+                                        </span>
                                     </div>
                                     <p className="text-sm text-slate-400 mb-4">{complaint.text_input}</p>
 

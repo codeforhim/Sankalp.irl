@@ -1,7 +1,83 @@
 import React, { useState, useEffect } from 'react';
-import { Map, Clock, Image as ImageIcon, Send, Camera, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Map, Clock, Image as ImageIcon, Send, Camera, CheckCircle, AlertTriangle, Sparkles, RefreshCw } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+
+const WardSummaryCard = ({ wardId }) => {
+    const [summary, setSummary] = useState(null);
+    const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const generateSummary = async () => {
+        if (!wardId) return;
+        setLoading(true);
+        try {
+            const res = await api.post(`/communication/ward-summary/${wardId}`);
+            setSummary(res.data.summary);
+            setStats(res.data.stats);
+        } catch (err) {
+            console.error('Ward summary error:', err);
+            setSummary('Unable to generate summary at this time.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="flex flex-col flex-1 space-y-3">
+            {summary ? (
+                <>
+                    <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4">
+                        <p className="text-sm text-indigo-200 leading-relaxed">🤖 {summary}</p>
+                    </div>
+                    {stats && (
+                        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                            <div className="bg-emerald-500/20 border border-emerald-500/30 rounded-lg p-2 text-center">
+                                <p className="text-lg font-bold text-emerald-400">{stats.verified}</p>
+                                <p className="text-[10px] text-slate-500 uppercase">Verified</p>
+                            </div>
+                            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-2 text-center">
+                                <p className="text-lg font-bold text-emerald-300">{stats.resolved}</p>
+                                <p className="text-[10px] text-slate-500 uppercase">Resolved</p>
+                            </div>
+                            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-2 text-center">
+                                <p className="text-lg font-bold text-amber-400">{stats.in_progress}</p>
+                                <p className="text-[10px] text-slate-500 uppercase">Active</p>
+                            </div>
+                            <div className="bg-rose-500/20 border border-rose-500/30 rounded-lg p-2 text-center">
+                                <p className="text-lg font-bold text-rose-400">{stats.needs_redo}</p>
+                                <p className="text-[10px] text-slate-500 uppercase">Redo</p>
+                            </div>
+                            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-2 text-center">
+                                <p className="text-lg font-bold text-blue-400">{stats.flagged}</p>
+                                <p className="text-[10px] text-slate-500 uppercase">Flagged</p>
+                            </div>
+                            <div className="bg-slate-500/10 border border-slate-500/20 rounded-lg p-2 text-center">
+                                <p className="text-lg font-bold text-slate-300">{stats.reported}</p>
+                                <p className="text-[10px] text-slate-500 uppercase">New</p>
+                            </div>
+                        </div>
+                    )}
+                    <button onClick={generateSummary} disabled={loading} className="flex items-center justify-center space-x-2 text-xs text-slate-400 hover:text-indigo-400 transition mt-1">
+                        <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+                        <span>Regenerate</span>
+                    </button>
+                </>
+            ) : (
+                <div className="flex-1 flex items-center justify-center min-h-[180px]">
+                    <button
+                        onClick={generateSummary}
+                        disabled={loading}
+                        className={`flex items-center space-x-2 px-5 py-3 rounded-xl font-semibold text-sm transition shadow-lg ${loading ? 'bg-indigo-900/50 text-indigo-300 cursor-wait' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20'}`}
+                    >
+                        <Sparkles className={`w-4 h-4 ${loading ? 'animate-pulse' : ''}`} />
+                        <span>{loading ? 'Generating with Llama AI...' : 'Generate AI Summary'}</span>
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
 
 const WardOfficerDashboard = () => {
     const { user } = useAuth();
@@ -138,15 +214,10 @@ const WardOfficerDashboard = () => {
                     </div>
                 </div>
 
-                {/* Smart Map Dashboard Placeholder */}
+                {/* AI Ward Activity Summary */}
                 <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-white/5 p-5 flex flex-col">
-                    <h2 className="text-lg font-semibold text-white border-b border-white/10 pb-2 mb-4">Spatial Intelligence</h2>
-                    <div className="bg-slate-950/50 flex-1 rounded-xl flex items-center justify-center text-slate-500 min-h-[250px] font-medium border border-white/5">
-                        <div className="text-center">
-                            <Map className="w-8 h-8 mx-auto mb-3 text-slate-600" />
-                            Cluster Map Integration
-                        </div>
-                    </div>
+                    <h2 className="text-lg font-semibold text-white border-b border-white/10 pb-2 mb-4">AI Ward Summary</h2>
+                    <WardSummaryCard wardId={user?.ward_id} />
                 </div>
 
                 {/* Evidence Verification (Feature 3) */}
@@ -216,7 +287,8 @@ const WardOfficerDashboard = () => {
                                     </div>
                                 )}
 
-                                {selectedComplaint.status !== 'resolved' && (
+                                {((selectedComplaint.status !== 'resolved' && selectedComplaint.status !== 'verified') || 
+                                  (selectedComplaint.ai_feedback?.includes('REJECTED'))) && (
                                     <button
                                         onClick={handleVerifySubmit}
                                         disabled={!file || uploading}
@@ -226,7 +298,13 @@ const WardOfficerDashboard = () => {
                                     </button>
                                 )}
 
-                                {selectedComplaint.status === 'resolved' && (
+                                {selectedComplaint.status === 'resolved' && !selectedComplaint.ai_feedback?.includes('REJECTED') && (
+                                    <div className="bg-emerald-500/20 text-emerald-400 p-4 rounded-xl border border-emerald-500/30 text-center font-bold">
+                                        Resolution submitted! Awaiting Admin verification. ⏳
+                                    </div>
+                                )}
+
+                                {selectedComplaint.status === 'verified' && (
                                     <div className="bg-emerald-500/20 text-emerald-400 p-4 rounded-xl border border-emerald-500/30 text-center font-bold">
                                         This task is completed and verified. 🎖️
                                     </div>

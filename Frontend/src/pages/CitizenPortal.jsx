@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Mic, MapPin, AlertCircle, CheckCircle, Upload } from 'lucide-react';
+import { Camera, Mic, MapPin, AlertCircle, CheckCircle, Upload, Megaphone } from 'lucide-react';
 import api from '../utils/api';
 
 const CitizenPortal = () => {
@@ -13,8 +13,21 @@ const CitizenPortal = () => {
 
     const fetchComplaints = async () => {
         try {
-            const res = await api.get('/complaints/my');
-            setRecentComplaints(res.data);
+            const [compRes, notifRes] = await Promise.all([
+                api.get('/complaints/my'),
+                api.get('/communication/my-notifications').catch(() => ({ data: { notifications: [] } })),
+            ]);
+            // Merge notifications into complaints
+            const notifications = notifRes.data.notifications || [];
+            const notifMap = {};
+            notifications.forEach(n => {
+                if (!notifMap[n.complaint_id]) notifMap[n.complaint_id] = n.message;
+            });
+            const merged = compRes.data.map(c => ({
+                ...c,
+                ai_notification: notifMap[c.id] || null,
+            }));
+            setRecentComplaints(merged);
         } catch (error) {
             console.error("Error fetching complaints:", error);
         }
@@ -45,7 +58,7 @@ const CitizenPortal = () => {
         if (complaintText) formData.append('text_input', complaintText);
         if (imageFile) formData.append('image', imageFile);
         if (audioFile) formData.append('audio', audioFile);
-        
+
         // Mock location for demo purposes (Delhi Central)
         formData.append('latitude', 28.6139);
         formData.append('longitude', 77.2090);
@@ -59,10 +72,10 @@ const CitizenPortal = () => {
             setComplaintText('');
             setImageFile(null);
             setAudioFile(null);
-            
+
             // Refresh complaint list to show the newly submitted one
             fetchComplaints();
-            
+
             setTimeout(() => {
                 setSuccess(false);
                 setAiCategory('');
@@ -139,8 +152,8 @@ const CitizenPortal = () => {
                         <span>Location auto-detected: Ward 1 (Delhi Central)</span>
                     </div>
 
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         disabled={loading}
                         className={`w-full font-semibold py-3.5 rounded-xl transition shadow-lg ${loading ? 'bg-indigo-900/50 text-indigo-200 cursor-not-allowed border border-indigo-500/30' : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-500/20'}`}
                     >
@@ -158,9 +171,16 @@ const CitizenPortal = () => {
                                     <div className={`p-2 rounded-lg mr-3 mt-0.5 ${complaint.status === 'resolved' ? 'bg-emerald-500/20' : 'bg-amber-500/20'}`}>
                                         {complaint.status === 'resolved' ? <CheckCircle className="w-5 h-5 text-emerald-400" /> : <AlertCircle className="w-5 h-5 text-amber-400" />}
                                     </div>
-                                    <div>
+                                    <div className="flex-1 min-w-0">
                                         <p className="font-medium text-slate-200">{complaint.text_input.substring(0, 30)}...</p>
                                         <p className="text-xs text-slate-500 mt-1">Status: <span className={complaint.status === 'resolved' ? 'text-emerald-400' : 'text-amber-400'}>{complaint.status.toUpperCase()}</span></p>
+                                        {complaint.ai_notification && (
+                                            <div className="mt-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg px-3 py-2">
+                                                <p className="text-xs text-indigo-300 leading-relaxed">
+                                                    🤖 {complaint.ai_notification}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}
