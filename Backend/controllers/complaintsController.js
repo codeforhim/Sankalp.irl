@@ -5,6 +5,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
 const priorityService = require('../services/priorityService');
+const wardService = require('../services/wardService');
 
 const createComplaint = async (req, res) => {
     try {
@@ -80,10 +81,25 @@ const createComplaint = async (req, res) => {
 
         // Note: The prompt instructed setting ward_id, latitude, longitude to NULL, 
         // but latitude/longitude have NOT NULL constraints in the database schema.
-        // We will pull latitude and longitude from the request body.
+        // Pull latitude and longitude from the request body.
         const { latitude, longitude } = req.body;
-        const ward_id = req.body.ward_id || 1;
-        let city_id = req.body.city_id || 2; // Defaulting to 2 (Delhi) since our test ward is there 
+        
+        // 1. Determine ward_id
+        // Try to get from request body, then from user profile, then fallback to spatial lookup
+        let ward_id = req.body.ward_id || req.user.ward_id;
+        
+        if (!ward_id && latitude && longitude) {
+            // Attempt spatial lookup if missing
+            ward_id = await wardService.findWardByCoordinates(latitude, longitude);
+        }
+        
+        // Final fallback if outside bounds or no coords
+        if (!ward_id) {
+            console.warn(`[Complaint Creation] Could not determine ward for user ${user_id}. Assigning fallback Ward 1.`);
+            ward_id = 1;
+        }
+
+        let city_id = req.body.city_id || req.user?.city_id || 2; // Defaulting to 2 (Delhi)
 
         // 2. Determine department (Map AI department text to civic_body_id)
         // From db/init.sql, civic_bodies are:
