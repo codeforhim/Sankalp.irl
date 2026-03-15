@@ -4,12 +4,13 @@ const axios = require('axios');
 const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
+const priorityService = require('../services/priorityService');
 
 const createComplaint = async (req, res) => {
     try {
         const { text_input, priority_score } = req.body;
         const user_id = req.user.id;
-        
+
         let image_url = null;
         let audio_url = null;
 
@@ -91,26 +92,29 @@ const createComplaint = async (req, res) => {
         // 3: Sanitation Department
         // 4: Electricity Department
         // 5: Urban Planning Authority
-        
+
         const departmentMap = {
             "Public Works Department": 1,
             "Water Works": 2,
             "Sanitation": 3,
             "Electrical Works": 4
         };
-        
+
         // AI returns "department" along with "issue_type". We grab it from aiRes data if it exists.
         // If the frontend explicitly sends one, use that, otherwise map the AI one, fallback to 1 (PWD)
         const mappedId = ai_department ? departmentMap[ai_department] : null;
         const civic_body_id = req.body.civic_body_id || mappedId || 1; 
 
+        // 2.5 Compute priority scores using the AI issue type and ward
+        const priorityData = await priorityService.calculatePriority(ai_issue_type, ward_id);
+
         // 3. Insert complaint into database
         const newComplaint = await db.query(
             `INSERT INTO complaints 
-            (user_id, city_id, ward_id, civic_body_id, text_input, audio_url, image_url, issue_type, priority_score, latitude, longitude, status) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+            (user_id, city_id, ward_id, civic_body_id, text_input, audio_url, image_url, issue_type, priority_score, impact_score, recurrence_score, latitude, longitude, status) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
             RETURNING *`,
-            [user_id, city_id, ward_id, civic_body_id, text_input, audio_url, image_url, ai_issue_type, priority_score || 0, latitude, longitude, 'reported']
+            [user_id, city_id, ward_id, civic_body_id, text_input, audio_url, image_url, ai_issue_type, priorityData.priority_score, priorityData.impact_score, priorityData.recurrence_score, latitude, longitude, 'reported']
         );
 
         // Reverse map so we can tell the frontend which department it is friendly string
@@ -146,7 +150,7 @@ const getComplaintsByWard = async (req, res) => {
     try {
         const { ward_id } = req.params;
         const city_id = req.user?.city_id; // For ward_staff, always filter by their city
-        
+
         // Ensure we filter by both ward and city to avoid leakage
         let query = 'SELECT * FROM complaints WHERE ward_id = $1';
         const params = [ward_id];
@@ -161,7 +165,7 @@ const getComplaintsByWard = async (req, res) => {
             params.push(req.user.civic_body_id);
         }
 
-        query += ' ORDER BY created_at DESC';
+        query += ' ORDER BY priority_score DESC NULLS LAST, created_at DESC';
 
         const complaints = await db.query(query, params);
         res.json(complaints.rows);
@@ -228,19 +232,19 @@ const verifyResolution = async (req, res) => {
         // In a real app we might fetch from S3. Here we simulate the python analysis getting it
         // Or if 'image_url' is a local file, we would stream it. Let's assume the frontend sends both
         // for simplicity, or we send a dummy if before_image is missing locally.
-        
+
         // Read file into buffer for more reliable transfer
         const afterImageBuffer = fs.readFileSync(afterImageFile.path);
-        
+
         // Construct multipart form-data to send to Python server
         const formData = new FormData();
-        formData.append('after_image', afterImageBuffer, { 
+        formData.append('after_image', afterImageBuffer, {
             filename: afterImageFile.originalname,
             contentType: afterImageFile.mimetype
         });
-        
+
         // Simulating the before image (using the same buffer for now)
-        formData.append('before_image', afterImageBuffer, { 
+        formData.append('before_image', afterImageBuffer, {
             filename: 'mock_before.jpg',
             contentType: 'image/jpeg'
         });
@@ -260,11 +264,11 @@ const verifyResolution = async (req, res) => {
             console.log(`AI Output for complaint ${complaint_id}:`, JSON.stringify(aiData));
         } catch (aiError) {
             console.error(`AI Service Error for complaint ${complaint_id}:`, aiError.message);
-            aiData = { 
-                resolved: false, 
-                ai_generated: false, 
+            aiData = {
+                resolved: false,
+                ai_generated: false,
                 message: "AI Verification Service is currently unavailable or timed out.",
-                error: aiError.message 
+                error: aiError.message
             };
         }
 
@@ -282,10 +286,10 @@ const verifyResolution = async (req, res) => {
         const afterImageUrl = `/uploads/${afterImageFile.filename}`;
         const aiFeedback = aiData.message || "AI Verification processed.";
         console.log(`Updating DB for complaint ${complaint_id}: status=${newStatus}, after_image_url=${afterImageUrl}`);
-        
+
         try {
             const updateRes = await db.query(
-                `UPDATE complaints SET status = $1, after_image_url = $2, ai_feedback = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4 RETURNING *`, 
+                `UPDATE complaints SET status = $1, after_image_url = $2, ai_feedback = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4 RETURNING *`,
                 [newStatus, afterImageUrl, aiFeedback, parseInt(complaint_id)]
             );
             console.log(`DB Update Result:`, updateRes.rowCount > 0 ? "SUCCESS" : "FAILURE (No row found)");
@@ -318,10 +322,10 @@ const getMyComplaints = async (req, res) => {
 };
 
 module.exports = {
-   createComplaint,
-   getComplaintsByCity,
-   getComplaintsByWard,
-   updateComplaintStatus,
-   verifyResolution,
-   getMyComplaints
+    createComplaint,
+    getComplaintsByCity,
+    getComplaintsByWard,
+    updateComplaintStatus,
+    verifyResolution,
+    getMyComplaints
 };
