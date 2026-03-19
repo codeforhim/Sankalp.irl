@@ -122,11 +122,17 @@ const CitizenPortal = () => {
                     )}
 
                     <div className="grid grid-cols-2 gap-4">
-                        <label className={`group flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl transition cursor-pointer ${imageFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-slate-700 hover:border-indigo-500 hover:bg-indigo-500/5'}`}>
-                            <Camera className={`w-8 h-8 mb-2 transition ${imageFile ? 'text-emerald-400' : 'text-slate-500 group-hover:text-indigo-400'}`} />
-                            <span className={`text-sm font-medium transition text-center ${imageFile ? 'text-emerald-300' : 'text-slate-400 group-hover:text-indigo-300'}`}>
-                                {imageFile ? imageFile.name : 'Upload Photo'}
-                            </span>
+                        <label className={`group flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl transition cursor-pointer ${imageFile ? 'border-emerald-500 bg-emerald-500/5 overflow-hidden p-0' : 'border-slate-700 hover:border-indigo-500 hover:bg-indigo-500/5'}`}>
+                            {imageFile ? (
+                                <img src={URL.createObjectURL(imageFile)} alt="Preview" className="w-full h-full object-cover rounded-xl" style={{ maxHeight: '120px' }} />
+                            ) : (
+                                <>
+                                    <Camera className="w-8 h-8 mb-2 text-slate-500 group-hover:text-indigo-400 transition" />
+                                    <span className="text-sm font-medium text-slate-400 group-hover:text-indigo-300 transition text-center">
+                                        Upload Photo
+                                    </span>
+                                </>
+                            )}
                             <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                         </label>
                         <label className={`group flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl transition cursor-pointer ${audioFile ? 'border-amber-500 bg-amber-500/5' : 'border-slate-700 hover:border-rose-500 hover:bg-rose-500/5'}`}>

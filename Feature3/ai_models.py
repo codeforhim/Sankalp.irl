@@ -1,30 +1,32 @@
 """
-ai_models.py — Issue Verification using Google Gemini API
+ai_models.py — Issue Verification using Groq API
 
 Algorithm design:
   - Step 1: Fake Image Detection (local/fast PIL stddev check)
-  - Step 2: Vision Reasoning using Gemini 1.5 Flash
+  - Step 2: Vision Reasoning using Groq Llama 3 Vision
 """
 import os
+import io
 import json
+import base64
 import logging
-import google.genai as genai
+from groq import Groq
 from PIL import Image, ImageStat
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize Gemini AI
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-if GEMINI_API_KEY:
+# Initialize Groq AI
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+if GROQ_API_KEY:
     try:
-        client = genai.Client(api_key=GEMINI_API_KEY)
-        logger.info("Successfully initialized Gemini API client.")
+        client = Groq(api_key=GROQ_API_KEY)
+        logger.info("Successfully initialized Groq API client.")
     except Exception as e:
-        logger.error(f"Failed to initialize Gemini API: {e}")
+        logger.error(f"Failed to initialize Groq API: {e}")
         client = None
 else:
-    logger.warning("GEMINI_API_KEY environment variable not found. Vision reasoning will fail.")
+    logger.warning("GROQ_API_KEY environment variable not found. Vision reasoning will fail.")
     client = None
 
 
@@ -56,20 +58,25 @@ def detect_fake_image(image: Image.Image) -> tuple[bool, float]:
 
 
 # ----------------------------------------------------------------
-# Main Vision Comparison using Gemini
+# Main Vision Comparison using Groq
 # ----------------------------------------------------------------
+
+def encode_image_to_base64(image: Image.Image) -> str:
+    buffered = io.BytesIO()
+    image.save(buffered, format="JPEG")
+    return base64.b64encode(buffered.getvalue()).decode('utf-8')
 
 def verify_issue_resolution(before_image: Image.Image, after_image: Image.Image) -> dict:
     """
-    Compares before/after civic repair images using Gemini 1.5 Flash.
+    Compares before/after civic repair images using Groq Llama 3 Vision.
     """
     if not client:
-        logger.error("Gemini client is not initialized (Missing API Key).")
+        logger.error("Groq client is not initialized (Missing API Key).")
         return {
             "issue_type": "unknown",
             "resolved": False,
             "confidence": 0.0,
-            "error": "GEMINI_API_KEY not configured. Please add it to your .env file."
+            "error": "GROQ_API_KEY not configured. Please add it to your .env file."
         }
 
     prompt = """
@@ -79,27 +86,43 @@ def verify_issue_resolution(before_image: Image.Image, after_image: Image.Image)
     
     Determine:
     1. 'issue_type': A short string describing what the primary civic issue is (e.g., 'pothole', 'garbage', 'broken_streetlight', 'waterlogging', 'unknown').
-    2. 'resolved': A boolean (true or false) indicating whether the issue appears fully and properly repaired/resolved in the "after" photo compared to the "before" photo.
-    3. 'confidence': A float between 0.0 and 1.0 indicating how confident you are in this assessment.
+    2. 'resolved': A boolean (true or false) indicating whether the issue appears repaired/resolved. IMPORTANT: If a pothole is filled, even if it is a rough or partial patch, you MUST consider it resolved (true), as the immediate hazard is fixed. Do not mark it as unresolved just because it looks rough.
+    3. 'confidence': A float between 0.0 and 1.0 indicating how confident you are in this assessment. If a pothole is filled (even partially), give a confidence > 0.70.
     4. 'message': A short human-readable explanation of why you consider it resolved or not.
     
     Output strictly as a valid JSON object matching the keys mentioned above, and nothing else.
     """
 
     try:
-        logger.info("Sending images to Gemini API for reasoning...")
+        logger.info("Sending images to Groq API for reasoning...")
         
-        response = client.models.generate_content(
-            model='gemini-2.0-flash',
-            contents=[prompt, before_image, after_image],
-            config=genai.types.GenerateContentConfig(
-                response_mime_type="application/json"
-            )
+        before_b64 = encode_image_to_base64(before_image)
+        after_b64 = encode_image_to_base64(after_image)
+        
+        response = client.chat.completions.create(
+            model='meta-llama/llama-4-scout-17b-16e-instruct',
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": f"data:image/jpeg;base64,{before_b64}"}
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": f"data:image/jpeg;base64,{after_b64}"}
+                        }
+                    ]
+                }
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.1
         )
         
-        # Parse output ensuring standard dict structure
-        result_text = response.text.strip()
-        logger.info(f"[Gemini Output]: {result_text}")
+        result_text = response.choices[0].message.content.strip()
+        logger.info(f"[Groq Output]: {result_text}")
         
         result_json = json.loads(result_text)
         
@@ -111,10 +134,10 @@ def verify_issue_resolution(before_image: Image.Image, after_image: Image.Image)
         }
 
     except Exception as e:
-        logger.error(f"[Vision] Gemini Analysis Error: {e}")
+        logger.error(f"[Vision] Groq Analysis Error: {e}")
         return {
             "issue_type": "unknown",
             "resolved": False,
             "confidence": 0.0,
-            "error": f"API Analysis failed: {str(e)}"
+            "message": f"API Analysis failed: {str(e)}"
         }

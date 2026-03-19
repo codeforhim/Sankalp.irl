@@ -4,8 +4,7 @@ import json
 import random
 from PIL import Image, ImageDraw, ImageFilter
 
-# API URL
-API_URL = "http://localhost:8000/verify-issue"
+API_URL = "http://localhost:8081/verify-issue"
 
 
 def create_pothole_image() -> io.BytesIO:

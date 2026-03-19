@@ -4,5 +4,5 @@ python-multipart
 pillow
 numpy
 requests
-google-genai
+groq
 python-dotenv
