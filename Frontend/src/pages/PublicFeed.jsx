@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Megaphone, CheckCircle, Clock, AlertTriangle, RefreshCw, ThumbsUp, ThumbsDown, MessageCircle, Send } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import LanguageToggle from '../components/LanguageToggle';
 
-const getStatusStyle = (status) => {
+const getStatusStyle = (status, t) => {
     switch (status) {
-        case 'resolved': return { bg: 'bg-green-50', border: 'border-[#138808]/20', text: 'text-[#138808]', icon: <CheckCircle className="w-4 h-4" />, label: 'Resolved' };
-        case 'in_progress': return { bg: 'bg-amber-50', border: 'border-amber-400/20', text: 'text-amber-600', icon: <Clock className="w-4 h-4" />, label: 'In Progress' };
-        case 'flagged_for_review': return { bg: 'bg-blue-50', border: 'border-[#1B3A6F]/20', text: 'text-[#1B3A6F]', icon: <AlertTriangle className="w-4 h-4" />, label: 'Under Review' };
-        default: return { bg: 'bg-gray-50', border: 'border-[#E5E7EB]', text: 'text-[#6B7280]', icon: <Clock className="w-4 h-4" />, label: status || 'Reported' };
+        case 'resolved': return { bg: 'bg-green-50', border: 'border-[#138808]/20', text: 'text-[#138808]', icon: <CheckCircle className="w-4 h-4" />, label: t('status_resolved') };
+        case 'in_progress': return { bg: 'bg-amber-50', border: 'border-amber-400/20', text: 'text-amber-600', icon: <Clock className="w-4 h-4" />, label: t('status_in_progress') };
+        case 'flagged_for_review': return { bg: 'bg-blue-50', border: 'border-[#1B3A6F]/20', text: 'text-[#1B3A6F]', icon: <AlertTriangle className="w-4 h-4" />, label: t('status_under_review') };
+        default: return { bg: 'bg-gray-50', border: 'border-[#E5E7EB]', text: 'text-[#6B7280]', icon: <Clock className="w-4 h-4" />, label: status || t('status_reported') };
     }
 };
 
 const UpdateCard = ({ update }) => {
+    const { t } = useTranslation();
     const { user } = useAuth();
     const [likes, setLikes] = useState(parseInt(update.likes_count) || 0);
     const [dislikes, setDislikes] = useState(parseInt(update.dislikes_count) || 0);
@@ -25,10 +28,10 @@ const UpdateCard = ({ update }) => {
     const [loadingComments, setLoadingComments] = useState(false);
     const [submittingComment, setSubmittingComment] = useState(false);
 
-    const style = getStatusStyle(update.status);
+    const style = getStatusStyle(update.status, t);
 
     const handleReaction = async (type) => {
-        if (!user) return alert("Please log in to react.");
+        if (!user) return alert(t('login_to_react'));
         
         try {
             await api.post(`/communication/updates/${update.id}/react`, { reaction_type: type });
@@ -72,7 +75,7 @@ const UpdateCard = ({ update }) => {
     };
 
     const handlePostComment = async () => {
-        if (!user) return alert("Please log in to leave feedback.");
+        if (!user) return alert(t('login_to_feedback'));
         if (!newComment.trim()) return;
 
         setSubmittingComment(true);
@@ -84,7 +87,7 @@ const UpdateCard = ({ update }) => {
             setCommentsCount(c => c + 1);
         } catch (err) {
             console.error("Failed to post comment", err);
-            alert("Failed to submit feedback.");
+            alert(t('feedback_failed'));
         } finally {
             setSubmittingComment(false);
         }
@@ -108,7 +111,7 @@ const UpdateCard = ({ update }) => {
                         <span className="text-xs text-[#9CA3AF] capitalize">{update.issue_type}</span>
                     )}
                     {update.ward_id && (
-                        <span className="text-xs text-[#9CA3AF]">• Ward {update.ward_id}</span>
+                        <span className="text-xs text-[#9CA3AF]">• {t('ward')} {update.ward_id}</span>
                     )}
                 </div>
                 
@@ -141,7 +144,7 @@ const UpdateCard = ({ update }) => {
                         className="flex items-center space-x-1.5 text-xs font-medium text-gray-500 hover:text-[#1B3A6F] transition ml-auto"
                     >
                         <MessageCircle className="w-4 h-4" />
-                        <span>{commentsCount} {commentsCount === 1 ? 'Comment' : 'Comments'}</span>
+                        <span>{commentsCount} {commentsCount === 1 ? t('comment') : t('comments')}</span>
                     </button>
                 </div>
 
@@ -155,7 +158,7 @@ const UpdateCard = ({ update }) => {
                                 type="text" 
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
-                                placeholder={user ? "Add public feedback..." : "Log in to add feedback..."}
+                                placeholder={user ? t('add_feedback_placeholder') : t('login_feedback_placeholder')}
                                 disabled={!user || submittingComment}
                                 className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:border-blue-500"
                                 onKeyDown={(e) => { if (e.key === 'Enter') handlePostComment(); }}
@@ -171,9 +174,9 @@ const UpdateCard = ({ update }) => {
 
                         {/* Comments List */}
                         {loadingComments ? (
-                            <p className="text-xs text-center text-gray-400 py-2">Loading feedback...</p>
+                            <p className="text-xs text-center text-gray-400 py-2">{t('loading_feedback')}</p>
                         ) : comments.length === 0 ? (
-                            <p className="text-xs text-center text-gray-400 py-2">No feedback yet. Be the first to comment!</p>
+                            <p className="text-xs text-center text-gray-400 py-2">{t('no_feedback')}</p>
                         ) : (
                             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                                 {comments.map(c => (
@@ -197,6 +200,7 @@ const UpdateCard = ({ update }) => {
 };
 
 const PublicFeed = () => {
+    const { t } = useTranslation();
     const [updates, setUpdates] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -224,27 +228,30 @@ const PublicFeed = () => {
                         <Megaphone className="w-6 h-6 text-[#1B3A6F]" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold text-[#1F2937]">Public Transparency Feed</h1>
-                        <p className="text-[#9CA3AF] text-sm">AI-generated municipal updates • Powered by Sankalp AI</p>
+                        <h1 className="text-xl font-bold text-[#1F2937]">{t('public_feed')}</h1>
+                        <p className="text-[#9CA3AF] text-sm">{t('public_feed_subtitle')}</p>
                     </div>
                 </div>
-                <button
-                    onClick={fetchFeed}
-                    disabled={loading}
-                    className="w-full sm:w-auto flex items-center justify-center space-x-2 text-sm bg-[#EEF2F7] hover:bg-[#E5E7EB] text-[#6B7280] px-4 py-2 rounded-lg transition border border-[#E5E7EB]"
-                >
-                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    <span>Refresh</span>
-                </button>
+                <div className="flex items-center space-x-3">
+                    <LanguageToggle />
+                    <button
+                        onClick={fetchFeed}
+                        disabled={loading}
+                        className="flex items-center justify-center space-x-2 text-sm bg-[#EEF2F7] hover:bg-[#E5E7EB] text-[#6B7280] px-4 py-2 rounded-lg transition border border-[#E5E7EB]"
+                    >
+                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                        <span>{t('refresh')}</span>
+                    </button>
+                </div>
             </div>
 
             {/* Feed — Timeline style */}
             {loading ? (
-                <div className="text-center py-20 text-[#9CA3AF]">Loading public updates...</div>
+                <div className="text-center py-20 text-[#9CA3AF]">{t('loading_updates')}</div>
             ) : updates.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-xl border border-[#E5E7EB] shadow-sm">
                     <Megaphone className="w-10 h-10 text-[#E5E7EB] mx-auto mb-3" />
-                    <p className="text-[#9CA3AF] text-sm">No public updates yet. Updates appear when complaint statuses change.</p>
+                    <p className="text-[#9CA3AF] text-sm">{t('no_updates')}</p>
                 </div>
             ) : (
                 <div className="relative pl-6 border-l-2 border-[#1B3A6F]/20 space-y-4">
