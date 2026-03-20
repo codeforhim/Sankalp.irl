@@ -43,37 +43,35 @@ const Login = () => {
     };
 
     return (
-        <div className="flex-1 bg-slate-950 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-            {/* Background effects */}
-            <div className="absolute top-0 -left-48 w-96 h-96 bg-indigo-600 rounded-full mix-blend-screen filter blur-[128px] opacity-10 animate-blob"></div>
+        <div className="flex-1 bg-[#F5F7FA] flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
 
             <div className="w-full max-w-md space-y-8 z-10 relative">
                 <div>
                     <div className="flex justify-center mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-indigo-500 flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-indigo-500/30">
-                            L
+                        <div className="w-12 h-12 rounded-xl bg-[#1B3A6F] flex items-center justify-center text-white font-bold text-2xl shadow-md">
+                            S
                         </div>
                     </div>
-                    <h2 className="mt-2 text-center text-3xl font-black text-white tracking-tight">
+                    <h2 className="mt-2 text-center text-3xl font-black text-[#1F2937] tracking-tight">
                         Welcome back
                     </h2>
-                    <p className="mt-2 text-center text-sm text-slate-400">
-                        Sign in to access your LokaYuktai dashboard
+                    <p className="mt-2 text-center text-sm text-[#6B7280]">
+                        Sign in to access your Sankalp dashboard
                     </p>
                 </div>
 
-                <div className="bg-slate-900/50 backdrop-blur-md px-8 py-10 shadow-2xl rounded-3xl border border-white/10">
+                <div className="bg-white px-8 py-10 shadow-lg rounded-2xl border border-[#E5E7EB]">
                     
                     {/* Role Selector Tabs */}
-                    <div className="flex space-x-1 bg-slate-800/50 p-1 rounded-xl mb-8">
+                    <div className="flex space-x-1 bg-[#EEF2F7] p-1 rounded-xl mb-8">
                         {Object.entries(roleConfig).map(([key, config]) => (
                             <button
                                 key={key}
                                 onClick={() => setRole(key)}
                                 className={`flex-1 flex items-center justify-center space-x-2 py-2 text-sm font-medium rounded-lg transition-all ${
                                     role === key 
-                                    ? 'bg-indigo-500 text-white shadow-md' 
-                                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                                    ? 'bg-[#1B3A6F] text-white shadow-md' 
+                                    : 'text-[#6B7280] hover:text-[#1F2937] hover:bg-white'
                                 }`}
                             >
                                 {config.icon}
@@ -84,14 +82,14 @@ const Login = () => {
 
                     <form className="space-y-6" onSubmit={handleLogin}>
                         {error && (
-                            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-start space-x-3">
-                                <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                                <span className="text-sm text-red-200">{error}</span>
+                            <div className="bg-red-50 border border-[#DC2626]/20 rounded-lg p-3 flex items-start space-x-3">
+                                <AlertCircle className="w-5 h-5 text-[#DC2626] shrink-0 mt-0.5" />
+                                <span className="text-sm text-[#DC2626]">{error}</span>
                             </div>
                         )}
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-300">
+                            <label className="block text-sm font-medium text-[#1F2937]">
                                 {role === 'user' ? 'Email Address' : 'Gov Email (.gov.in)'}
                             </label>
                             <input
@@ -99,19 +97,19 @@ const Login = () => {
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="mt-2 text-white bg-slate-950/50 appearance-none relative block w-full px-4 py-3 border border-white/10 rounded-xl placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-all"
+                                className="mt-2 text-[#1F2937] bg-white appearance-none relative block w-full px-4 py-3 border border-[#E5E7EB] rounded-xl placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#1B3A6F] focus:border-[#1B3A6F] focus:z-10 sm:text-sm transition-all"
                                 placeholder={role === 'user' ? "you@example.com" : "officer@city.gov.in"}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-300">Password</label>
+                            <label className="block text-sm font-medium text-[#1F2937]">Password</label>
                             <input
                                 type="password"
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="mt-2 text-white bg-slate-950/50 appearance-none relative block w-full px-4 py-3 border border-white/10 rounded-xl placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-all"
+                                className="mt-2 text-[#1F2937] bg-white appearance-none relative block w-full px-4 py-3 border border-[#E5E7EB] rounded-xl placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#1B3A6F] focus:border-[#1B3A6F] focus:z-10 sm:text-sm transition-all"
                                 placeholder="••••••••"
                             />
                         </div>
@@ -120,7 +118,7 @@ const Login = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-slate-900 transition-all ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                className={`gov-btn-primary group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl transition-all ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                             >
                                 {loading ? 'Signing in...' : 'Sign in'}
                             </button>
@@ -128,8 +126,8 @@ const Login = () => {
                     </form>
 
                     <div className="mt-6 text-center">
-                        <span className="text-sm text-slate-400">Don't have an account? </span>
-                        <Link to="/signup" className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
+                        <span className="text-sm text-[#6B7280]">Don't have an account? </span>
+                        <Link to="/signup" className="text-sm font-medium text-[#1B3A6F] hover:text-[#FF7A00] transition-colors">
                             Register now
                         </Link>
                     </div>

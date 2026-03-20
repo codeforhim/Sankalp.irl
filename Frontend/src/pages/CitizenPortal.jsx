@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Mic, MapPin, AlertCircle, CheckCircle, Upload, Megaphone } from 'lucide-react';
+import { Camera, Mic, MapPin, AlertCircle, CheckCircle } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import LocationPickerModal from '../components/LocationPickerModal';
@@ -15,7 +15,6 @@ const CitizenPortal = () => {
     const [aiCategory, setAiCategory] = useState('');
     const [recentComplaints, setRecentComplaints] = useState([]);
 
-    // Location Modal State
     const [showLocationModal, setShowLocationModal] = useState(false);
 
     // Enforce location picker
@@ -31,16 +30,19 @@ const CitizenPortal = () => {
                 api.get('/complaints/my'),
                 api.get('/communication/my-notifications').catch(() => ({ data: { notifications: [] } })),
             ]);
-            // Merge notifications into complaints
+
             const notifications = notifRes.data.notifications || [];
             const notifMap = {};
+
             notifications.forEach(n => {
                 if (!notifMap[n.complaint_id]) notifMap[n.complaint_id] = n.message;
             });
+
             const merged = compRes.data.map(c => ({
                 ...c,
                 ai_notification: notifMap[c.id] || null,
             }));
+
             setRecentComplaints(merged);
         } catch (error) {
             console.error("Error fetching complaints:", error);
@@ -65,17 +67,22 @@ const CitizenPortal = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!complaintText && !audioFile && !imageFile) return alert("Please provide some input (text, audio, or image).");
+
+        if (!complaintText && !audioFile && !imageFile) {
+            return alert("Please provide some input (text, audio, or image).");
+        }
 
         setLoading(true);
+
         const formData = new FormData();
         if (complaintText) formData.append('text_input', complaintText);
         if (imageFile) formData.append('image', imageFile);
         if (audioFile) formData.append('audio', audioFile);
 
-        // Append real location instead of mock
+        // ✅ Real location (fixed)
         formData.append('latitude', user?.latitude || 28.6139);
         formData.append('longitude', user?.longitude || 77.2090);
+
         if (user?.ward_id) {
             formData.append('ward_id', user.ward_id);
         }
@@ -84,19 +91,23 @@ const CitizenPortal = () => {
             const res = await api.post('/complaints/create', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
+
             setSuccess(true);
-            setAiCategory(`${res.data.complaint.issue_type} -> Assigned to: ${res.data.department || 'Default Department'}`);
+            setAiCategory(
+                `${res.data.complaint.issue_type} -> Assigned to: ${res.data.department || 'Default Department'}`
+            );
+
             setComplaintText('');
             setImageFile(null);
             setAudioFile(null);
 
-            // Refresh complaint list to show the newly submitted one
             fetchComplaints();
 
             setTimeout(() => {
                 setSuccess(false);
                 setAiCategory('');
             }, 8000);
+
         } catch (err) {
             console.error("Submission failed:", err);
             alert("Failed to submit report. Please try again.");
@@ -108,7 +119,7 @@ const CitizenPortal = () => {
     return (
         <div className="w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-6">
 
-            {/* Location Picker Modal */}
+            {/* Location Modal */}
             {showLocationModal && (
                 <LocationPickerModal 
                     onClose={() => setShowLocationModal(false)} 
@@ -116,130 +127,151 @@ const CitizenPortal = () => {
                 />
             )}
 
-            {/* Header and Trust Score */}
-            <div className="flex flex-col md:flex-row justify-between items-center bg-slate-900/50 backdrop-blur-sm p-4 rounded-xl border border-white/5 shadow-sm">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl border border-[#E5E7EB] shadow-sm">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Citizen Reporting Portal</h1>
-                    <p className="text-slate-400 text-sm mt-1">Report civic issues instantly and securely</p>
+                    <h1 className="text-2xl font-bold text-[#1F2937]">Citizen Reporting Portal</h1>
+                    <p className="text-[#6B7280] text-sm mt-1">
+                        Report civic issues instantly and securely
+                    </p>
                 </div>
-                <div className="mt-4 md:mt-0 flex items-center bg-indigo-500/10 px-4 py-2 rounded-full border border-indigo-500/20">
-                    <span className="text-indigo-400 font-semibold mr-2">Your Trust Score:</span>
-                    <span className="text-xl font-bold text-indigo-300">85/100</span>
+
+                <div className="mt-4 md:mt-0 flex items-center bg-[#138808]/10 px-4 py-2 rounded-full border border-[#138808]/20">
+                    <span className="text-[#138808] font-semibold mr-2">
+                        Citizen Credibility Index:
+                    </span>
+                    <span className="text-xl font-bold text-[#138808]">85/100</span>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                {/* Smart Issue Reporting */}
-                <form onSubmit={handleSubmit} className="bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-white/5 p-5 lg:col-span-2 space-y-4">
-                    <h2 className="text-lg font-semibold text-white border-b border-white/10 pb-2">Smart Issue Reporting</h2>
+                {/* Reporting Form */}
+                <form
+                    onSubmit={handleSubmit}
+                    className="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm p-5 lg:col-span-2 space-y-4"
+                >
+                    <h2 className="text-lg font-semibold text-[#1F2937] border-b pb-2">
+                        Smart Issue Reporting
+                    </h2>
 
                     {success && (
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-lg flex flex-col items-start space-y-2">
+                        <div className="bg-green-50 border border-[#138808]/20 text-[#138808] p-4 rounded-lg">
                             <div className="flex items-center">
                                 <CheckCircle className="w-5 h-5 mr-2" />
-                                <span className="font-semibold">Report successfully submitted!</span>
+                                <span className="font-semibold">Report submitted!</span>
                             </div>
-                            <div className="pl-7 text-sm">
-                                Issue categorized as: <span className="font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded">{aiCategory}</span>
-                            </div>
+                            <p className="text-sm mt-2">
+                                Issue categorized as:
+                                <span className="ml-1 font-bold">{aiCategory}</span>
+                            </p>
                         </div>
                     )}
 
+                    {/* Uploads */}
                     <div className="grid grid-cols-2 gap-4">
-                        <label className={`group flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl transition cursor-pointer ${imageFile ? 'border-emerald-500 bg-emerald-500/5 overflow-hidden p-0' : 'border-slate-700 hover:border-indigo-500 hover:bg-indigo-500/5'}`}>
+                        <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl cursor-pointer">
                             {imageFile ? (
-                                <img src={URL.createObjectURL(imageFile)} alt="Preview" className="w-full h-full object-cover rounded-xl" style={{ maxHeight: '120px' }} />
+                                <img
+                                    src={URL.createObjectURL(imageFile)}
+                                    alt="Preview"
+                                    className="h-24 object-cover rounded"
+                                />
                             ) : (
                                 <>
-                                    <Camera className="w-8 h-8 mb-2 text-slate-500 group-hover:text-indigo-400 transition" />
-                                    <span className="text-sm font-medium text-slate-400 group-hover:text-indigo-300 transition text-center">
-                                        Upload Photo
-                                    </span>
+                                    <Camera className="w-8 h-8 mb-2 text-gray-400" />
+                                    <span>Upload Photo</span>
                                 </>
                             )}
-                            <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                            <input type="file" hidden accept="image/*" onChange={handleImageChange} />
                         </label>
-                        <label className={`group flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl transition cursor-pointer ${audioFile ? 'border-amber-500 bg-amber-500/5' : 'border-slate-700 hover:border-rose-500 hover:bg-rose-500/5'}`}>
-                            <Mic className={`w-8 h-8 mb-2 transition ${audioFile ? 'text-amber-400' : 'text-slate-500 group-hover:text-rose-400'}`} />
-                            <span className={`text-sm font-medium transition text-center ${audioFile ? 'text-amber-300' : 'text-slate-400 group-hover:text-rose-300'}`}>
-                                {audioFile ? audioFile.name : 'Upload Voice Note'}
-                            </span>
-                            <input type="file" className="hidden" accept="audio/*" onChange={handleAudioChange} />
+
+                        <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl cursor-pointer">
+                            <Mic className="w-8 h-8 mb-2 text-gray-400" />
+                            <span>{audioFile ? audioFile.name : 'Upload Voice'}</span>
+                            <input type="file" hidden accept="audio/*" onChange={handleAudioChange} />
                         </label>
                     </div>
 
-                    <div className="relative">
-                        <textarea
-                            value={complaintText}
-                            onChange={(e) => setComplaintText(e.target.value)}
-                            className="w-full mt-2 p-4 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 min-h-[120px]"
-                            placeholder="Describe the issue... AI will automatically categorize it (e.g., 'Water leakage', 'Streetlight off')"
-                        ></textarea>
-                    </div>
+                    {/* Text */}
+                    <textarea
+                        value={complaintText}
+                        onChange={(e) => setComplaintText(e.target.value)}
+                        className="w-full p-4 border rounded-xl"
+                        placeholder="Describe the issue..."
+                    />
 
-                    <div className="flex items-center text-sm text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-lg justify-between cursor-pointer hover:bg-emerald-500/20 transition" onClick={() => setShowLocationModal(true)}>
+                    {/* Location */}
+                    <div
+                        className="flex justify-between items-center p-3 border rounded-lg cursor-pointer"
+                        onClick={() => setShowLocationModal(true)}
+                    >
                         <div className="flex items-center">
                             <MapPin className="w-4 h-4 mr-2" />
                             <span>
-                                {user?.ward_id 
-                                    ? `Location auto-detected: Ward ${user.ward_id} (Delhi)` 
-                                    : 'Please set your location!'}
+                                {user?.ward_id
+                                    ? `Ward ${user.ward_id}`
+                                    : 'Set your location'}
                             </span>
                         </div>
-                        <span className="text-xs font-bold underline">Edit</span>
+                        <span className="text-xs underline">Edit</span>
                     </div>
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className={`w-full font-semibold py-3.5 rounded-xl transition shadow-lg ${loading ? 'bg-indigo-900/50 text-indigo-200 cursor-not-allowed border border-indigo-500/30' : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-500/20'}`}
+                        className="w-full py-3 bg-blue-600 text-white rounded-xl"
                     >
-                        {loading ? 'Analyzing issue with AI...' : 'Submit Report'}
+                        {loading ? 'Submitting...' : 'Submit Report'}
                     </button>
                 </form>
 
-                {/* Live Status & Transparency */}
-                <div className="space-y-6 lg:col-span-1">
-                    <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-white/5 p-5">
-                        <h2 className="text-lg font-semibold text-white border-b border-white/10 pb-2 mb-4">Live Track Status</h2>
-                        <div className="space-y-5">
-                            {recentComplaints.map(complaint => (
-                                <div key={complaint.id} className="flex items-start">
-                                    <div className={`p-2 rounded-lg mr-3 mt-0.5 ${complaint.status === 'resolved' ? 'bg-emerald-500/20' : 'bg-amber-500/20'}`}>
-                                        {complaint.status === 'resolved' ? <CheckCircle className="w-5 h-5 text-emerald-400" /> : <AlertCircle className="w-5 h-5 text-amber-400" />}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-medium text-slate-200">{complaint.text_input.substring(0, 30)}...</p>
-                                        <p className="text-xs text-slate-500 mt-1">Status: <span className={complaint.status === 'resolved' ? 'text-emerald-400' : 'text-amber-400'}>{complaint.status.toUpperCase()}</span></p>
-                                        {complaint.ai_notification && (
-                                            <div className="mt-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg px-3 py-2">
-                                                <p className="text-xs text-indigo-300 leading-relaxed">
-                                                    🤖 {complaint.ai_notification}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
+                {/* Sidebar */}
+                <div className="space-y-6">
+
+                    {/* Complaints */}
+                    <div className="bg-white p-5 rounded-xl border">
+                        <h2 className="font-semibold mb-4">Live Status</h2>
+
+                        {recentComplaints.map(c => (
+                            <div key={c.id} className="flex items-start mb-4">
+                                <div className="mr-3">
+                                    {c.status === 'resolved'
+                                        ? <CheckCircle className="text-green-500" />
+                                        : <AlertCircle className="text-yellow-500" />
+                                    }
                                 </div>
-                            ))}
-                        </div>
+
+                                <div>
+                                    <p className="text-sm">{c.text_input?.slice(0, 30)}</p>
+                                    <p className="text-xs">{c.status}</p>
+
+                                    {c.ai_notification && (
+                                        <p className="text-xs mt-1">🤖 {c.ai_notification}</p>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
-                    <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-white/5 p-5">
-                        <h2 className="text-lg font-semibold text-white border-b border-white/10 pb-2 mb-4">Ward Transparency Map</h2>
-                        <div className="bg-slate-800/50 border border-slate-700 w-full h-48 rounded-xl flex flex-col items-center justify-center text-slate-500 font-medium overflow-hidden relative">
-                            {user?.ward_id ? (
-                                <CivicHeatmap targetType="ward" targetId={user.ward_id} showPolygons={true} />
-                            ) : (
-                                <>
-                                    <MapPin className="w-8 h-8 opacity-50 mb-2" />
-                                    <span className="text-sm">Set location to view Ward Map</span>
-                                </>
-                            )}
-                        </div>
+                    {/* Heatmap */}
+                    <div className="bg-white p-5 rounded-xl border">
+                        <h2 className="font-semibold mb-4">Ward Map</h2>
+
+                        {user?.ward_id ? (
+                            <CivicHeatmap
+                                targetType="ward"
+                                targetId={user.ward_id}
+                                showPolygons={true}
+                            />
+                        ) : (
+                            <p className="text-sm text-gray-400">
+                                Set location to view map
+                            </p>
+                        )}
                     </div>
+
                 </div>
-
             </div>
         </div>
     );
