@@ -8,7 +8,6 @@ const Signup = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     
-    // Additional generic fields assuming mock/demo cities/wards since no endpoints to fetch them were specified
     const [cityId, setCityId] = useState(1);
     const [wardId, setWardId] = useState(1);
     const [civicBodyId, setCivicBodyId] = useState(1);
@@ -58,32 +57,32 @@ const Signup = () => {
         setLoading(false);
     };
 
+    const inputClass = "text-[#1F2937] bg-white appearance-none relative block w-full px-4 py-3 border border-[#E5E7EB] rounded-xl placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#138808] focus:border-[#138808] sm:text-sm";
+
     return (
-        <div className="flex-1 bg-slate-950 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-            {/* Background effects */}
-            <div className="absolute top-0 -right-48 w-96 h-96 bg-emerald-600 rounded-full mix-blend-screen filter blur-[128px] opacity-10 animate-blob"></div>
+        <div className="flex-1 bg-[#F5F7FA] flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
 
             <div className="w-full max-w-md space-y-8 z-10 relative">
                 <div>
-                    <h2 className="mt-2 text-center text-3xl font-black text-white tracking-tight">
+                    <h2 className="mt-2 text-center text-3xl font-black text-[#1F2937] tracking-tight">
                         Create an Account
                     </h2>
-                    <p className="mt-2 text-center text-sm text-slate-400">
-                        Join LokaYuktai to improve your city
+                    <p className="mt-2 text-center text-sm text-[#6B7280]">
+                        Join Sankalp to improve your city
                     </p>
                 </div>
 
-                <div className="bg-slate-900/50 backdrop-blur-md px-8 py-10 shadow-2xl rounded-3xl border border-white/10">
+                <div className="bg-white px-8 py-10 shadow-lg rounded-2xl border border-[#E5E7EB]">
                     
-                    <div className="flex space-x-1 bg-slate-800/50 p-1 rounded-xl mb-8">
+                    <div className="flex space-x-1 bg-[#EEF2F7] p-1 rounded-xl mb-8">
                         {Object.entries(roleConfig).map(([key, config]) => (
                             <button
                                 key={key}
                                 onClick={() => setRole(key)}
                                 className={`flex-1 flex items-center justify-center space-x-2 py-2 text-sm font-medium rounded-lg transition-all ${
                                     role === key 
-                                    ? 'bg-emerald-500 text-white shadow-md' 
-                                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                                    ? 'bg-[#138808] text-white shadow-md' 
+                                    : 'text-[#6B7280] hover:text-[#1F2937] hover:bg-white'
                                 }`}
                             >
                                 {config.icon}
@@ -94,76 +93,50 @@ const Signup = () => {
 
                     <form className="space-y-4" onSubmit={handleSignup}>
                         {error && (
-                            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-start space-x-3">
-                                <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                                <span className="text-sm text-red-200">{error}</span>
+                            <div className="bg-red-50 border border-[#DC2626]/20 rounded-lg p-3 flex items-start space-x-3">
+                                <AlertCircle className="w-5 h-5 text-[#DC2626] shrink-0 mt-0.5" />
+                                <span className="text-sm text-[#DC2626]">{error}</span>
                             </div>
                         )}
                         {success && (
-                            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3">
-                                <span className="text-sm text-emerald-200 font-medium">{success}</span>
+                            <div className="bg-green-50 border border-[#138808]/20 rounded-lg p-3">
+                                <span className="text-sm text-[#138808] font-medium">{success}</span>
                             </div>
                         )}
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-1">
+                            <label className="block text-sm font-medium text-[#1F2937] mb-1">
                                 {role === 'user' ? 'Email Address' : 'Gov Email (.gov.in)'}
                             </label>
-                            <input
-                                type="email"
-                                required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="text-white bg-slate-950/50 appearance-none relative block w-full px-4 py-3 border border-white/10 rounded-xl placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                            />
+                            <input type="email" required value={email}
+                                onChange={(e) => setEmail(e.target.value)} className={inputClass} />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-1">Password</label>
-                            <input
-                                type="password"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="text-white bg-slate-950/50 appearance-none relative block w-full px-4 py-3 border border-white/10 rounded-xl placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                            />
+                            <label className="block text-sm font-medium text-[#1F2937] mb-1">Password</label>
+                            <input type="password" required value={password}
+                                onChange={(e) => setPassword(e.target.value)} className={inputClass} />
                         </div>
 
-                        {/* Additional fields for specific roles */}
                         {(role === 'admin' || role === 'ward_staff') && (
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">City ID (Demo: 1 for Mumbai)</label>
-                                <input
-                                    type="number"
-                                    required
-                                    value={cityId}
-                                    onChange={(e) => setCityId(Number(e.target.value))}
-                                    className="text-white bg-slate-950/50 appearance-none relative block w-full px-4 py-3 border border-white/10 rounded-xl placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                                />
+                                <label className="block text-sm font-medium text-[#1F2937] mb-1">City ID (Demo: 1 for Mumbai)</label>
+                                <input type="number" required value={cityId}
+                                    onChange={(e) => setCityId(Number(e.target.value))} className={inputClass} />
                             </div>
                         )}
 
                         {role === 'ward_staff' && (
                             <>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-300 mb-1">Ward ID (Demo: 1 for Delhi Test Polygon)</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        value={wardId}
-                                        onChange={(e) => setWardId(Number(e.target.value))}
-                                        className="text-white bg-slate-950/50 appearance-none relative block w-full px-4 py-3 border border-white/10 rounded-xl placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                                    />
+                                    <label className="block text-sm font-medium text-[#1F2937] mb-1">Ward ID (Demo: 1 for Delhi Test Polygon)</label>
+                                    <input type="number" required value={wardId}
+                                        onChange={(e) => setWardId(Number(e.target.value))} className={inputClass} />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-300 mb-1">Civic Body/Dept ID (1=PWD, 2=Water...)</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        value={civicBodyId}
-                                        onChange={(e) => setCivicBodyId(Number(e.target.value))}
-                                        className="text-white bg-slate-950/50 appearance-none relative block w-full px-4 py-3 border border-white/10 rounded-xl placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                                    />
+                                    <label className="block text-sm font-medium text-[#1F2937] mb-1">Civic Body/Dept ID (1=PWD, 2=Water...)</label>
+                                    <input type="number" required value={civicBodyId}
+                                        onChange={(e) => setCivicBodyId(Number(e.target.value))} className={inputClass} />
                                 </div>
                             </>
                         )}
@@ -172,7 +145,7 @@ const Signup = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className={`w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-emerald-600 hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 focus:ring-offset-slate-900 transition-all ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                className={`w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-[#138808] hover:bg-[#0e6b06] transition-all ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                             >
                                 {loading ? 'Registering...' : 'Complete Registration'}
                             </button>
@@ -180,8 +153,8 @@ const Signup = () => {
                     </form>
 
                     <div className="mt-6 text-center">
-                        <span className="text-sm text-slate-400">Already have an account? </span>
-                        <Link to="/login" className="text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-colors">
+                        <span className="text-sm text-[#6B7280]">Already have an account? </span>
+                        <Link to="/login" className="text-sm font-medium text-[#138808] hover:text-[#0e6b06] transition-colors">
                             Sign in here
                         </Link>
                     </div>
