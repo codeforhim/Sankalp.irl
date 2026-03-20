@@ -34,9 +34,9 @@ const getWardGeometries = async (req, res) => {
 
 const getHeatmapData = async (req, res) => {
     try {
-        const { target_type, target_id } = req.params; 
+        const { target_type, target_id } = req.params;
         // target_type: 'city' or 'ward'
-        
+
         let query = `
             SELECT latitude, longitude,
             CASE 
@@ -59,7 +59,7 @@ const getHeatmapData = async (req, res) => {
         }
 
         const mapData = await db.query(query, queryParams);
-        
+
         // Return array of [lat, lng, intensity] for leaflet.heat
         const heatPoints = mapData.rows.map(row => [
             parseFloat(row.latitude),
@@ -75,7 +75,7 @@ const getHeatmapData = async (req, res) => {
 };
 
 module.exports = {
-   getMapDataByCity,
-   getWardGeometries,
-   getHeatmapData
+    getMapDataByCity,
+    getWardGeometries,
+    getHeatmapData
 };
