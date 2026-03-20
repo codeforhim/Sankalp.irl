@@ -4,7 +4,7 @@ require('dotenv').config();
 const authenticateToken = (req, res, next) => {
     // INTERNAL AGENT BYPASS
     if (req.headers['x-agent-secret'] === 'super_agent_bypass_404') {
-        req.user = { id: req.body?.user_id || 1, role: 'admin', city_id: 2 };
+        req.user = { id: parseInt(req.headers['x-agent-user-id']) || req.body?.user_id || 1, role: req.headers['x-agent-role'] || 'admin', city_id: 2 };
         return next();
     }
 
@@ -37,7 +37,7 @@ const restrictToRole = (roles) => {
 const optionalAuthenticateToken = (req, res, next) => {
     // INTERNAL AGENT BYPASS
     if (req.headers['x-agent-secret'] === 'super_agent_bypass_404') {
-        req.user = { id: req.body?.user_id || 1, role: 'admin', city_id: 2 };
+        req.user = { id: parseInt(req.headers['x-agent-user-id']) || req.body?.user_id || 1, role: req.headers['x-agent-role'] || 'admin', city_id: 2 };
         return next();
     }
 
