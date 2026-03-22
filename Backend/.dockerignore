@@ -1,7 +1,10 @@
-node_modules/
-.git/
+node_modules
+npm-debug.log
 .env
-dist/
-build/
-.vscode/
-.DS_Store
+.git
+.gitignore
+*.md
+Dockerfile
+.dockerignore
+dist
+build

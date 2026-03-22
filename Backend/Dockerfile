@@ -1,7 +1,7 @@
-FROM node:20-alpine
+# Stage 1: Dependency Builder
+FROM node:20-alpine as builder
 
-# Install Python3 using Alpine's pre-compiled packages (no C compiler needed)
-# All packages below have pre-built Alpine binaries - no compilation required
+# Install Python3 using Alpine's pre-compiled packages
 RUN apk add --no-cache \
     python3 \
     py3-pip \
@@ -9,24 +9,33 @@ RUN apk add --no-cache \
     py3-pandas \
     py3-scikit-learn
 
-# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
 COPY package*.json ./
-
-# Install Node dependencies
 RUN npm install
 
-# Copy the rest of the application files
+# Stage 2: Final Runtime Image
+FROM node:20-alpine
+
+# Repeat installation of python runtime packages needed for execution
+RUN apk add --no-cache \
+    python3 \
+    py3-numpy \
+    py3-pandas \
+    py3-scikit-learn
+
+WORKDIR /app
+
+# Copy node_modules and other binaries from builder
+COPY --from=builder /app/node_modules ./node_modules
 COPY . .
 
-# Fix Windows line endings (CRLF -> LF) and make entrypoint executable
-RUN apk add --no-cache dos2unix && dos2unix docker-entrypoint.sh && apk del dos2unix
-RUN chmod +x docker-entrypoint.sh
+# Fix Windows line endings and make entrypoint executable
+RUN apk add --no-cache dos2unix && \
+    dos2unix docker-entrypoint.sh && \
+    chmod +x docker-entrypoint.sh && \
+    apk del dos2unix
 
-# Expose the Express server port
 EXPOSE 5000
 
-# Use entrypoint that runs schema migration then starts the server
 CMD ["sh", "docker-entrypoint.sh"]
