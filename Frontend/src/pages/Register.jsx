@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/api';
 
 const Register = () => {
     const [role, setRole] = useState('user'); // 'user', 'ward', 'admin'
@@ -20,7 +20,7 @@ const Register = () => {
         // Fetch cities, wards, civic bodies for dropdowns
         const fetchMeta = async () => {
             try {
-                const response = await axios.get('/public/meta');
+                const response = await api.get('/public/meta');
                 setMeta(response.data);
             } catch (err) {
                 console.error("Failed to load metadata", err);
@@ -55,7 +55,7 @@ const Register = () => {
                 payload.civic_body_id = formData.civic_body_id;
             }
             
-            const response = await axios.post(endpoint, payload);
+            const response = await api.post(endpoint, payload);
             
             // Save token and navigate
             localStorage.setItem('token', response.data.token);

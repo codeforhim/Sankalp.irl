@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/api';
 
 const Login = () => {
     const [role, setRole] = useState('user'); // 'user', 'ward', 'admin'
@@ -19,7 +19,7 @@ const Login = () => {
             const endpoint = `/auth/${role}/login`;
             const payload = role === 'user' ? { email, password } : { gov_email: email, password };
             
-            const response = await axios.post(endpoint, payload);
+            const response = await api.post(endpoint, payload);
             
             // Save token and user info
             localStorage.setItem('token', response.data.token);
