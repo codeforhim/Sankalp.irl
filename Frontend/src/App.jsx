@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -17,6 +17,13 @@ import LokSahayak from './pages/LokSahayak';
 const Navigation = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -24,41 +31,46 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="bg-white shadow-md border-t-[3px] border-[#FF9933] sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex space-x-8 items-center justify-between w-full">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-lg bg-[#1B3A6F] flex items-center justify-center text-white font-bold text-xl">S</div>
-              <span className="text-xl font-black tracking-tight text-[#1B3A6F]">Sankalp</span>
-            </Link>
-            <div className="hidden md:flex items-center space-x-1">
-              <Link to="/" className="text-[#6B7280] hover:text-[#1B3A6F] hover:bg-[#EEF2F7] px-3 py-2 rounded-lg text-sm font-medium transition-all">Home</Link>
-              <Link to="/public-feed" className="text-[#6B7280] hover:text-[#1B3A6F] hover:bg-[#EEF2F7] px-3 py-2 rounded-lg text-sm font-medium transition-all">Public Feed</Link>
-              <Link to="/loksahayak" className="bg-[#FF9933]/10 border border-[#FF9933]/20 text-[#FF9933] hover:bg-[#FF9933]/20 px-3 py-2 rounded-lg text-sm font-bold transition-all ml-1 flex items-center">🟠 LokSahayak</Link>
-              <Link to="/news-verification" className="bg-[#138808]/10 border border-[#138808]/20 text-[#138808] hover:bg-[#138808]/20 px-3 py-2 rounded-lg text-sm font-bold transition-all ml-1 flex items-center">🟢 Verified News</Link>
-              {isAuthenticated ? (
-                  <>
-                    {user?.role === 'user' && (
-                        <Link to="/citizen" className="text-[#6B7280] hover:text-[#1B3A6F] hover:bg-[#EEF2F7] px-3 py-2 rounded-lg text-sm font-medium transition-all">Citizen Portal</Link>
-                    )}
-                    {user?.role === 'ward_staff' && (
-                        <Link to="/ward-officer" className="text-[#6B7280] hover:text-[#1B3A6F] hover:bg-[#EEF2F7] px-3 py-2 rounded-lg text-sm font-medium transition-all">Ward Officer</Link>
-                    )}
-                    {user?.role === 'admin' && (
-                        <Link to="/admin" className="text-[#6B7280] hover:text-[#1B3A6F] hover:bg-[#EEF2F7] px-3 py-2 rounded-lg text-sm font-medium transition-all">Admin</Link>
-                    )}
-                    <button onClick={handleLogout} className="text-[#DC2626] hover:bg-red-50 px-3 py-2 rounded-lg text-sm font-medium transition-all ml-4">Logout</button>
-                  </>
-              ) : (
-                  <div className="flex items-center space-x-2 ml-4">
-                    <Link to="/login" className="text-[#1B3A6F] hover:bg-[#EEF2F7] px-4 py-2 rounded-xl text-sm font-bold transition-all">Sign In</Link>
-                    <Link to="/signup" className="gov-btn-primary px-4 py-2 text-sm shadow-sm">Sign Up</Link>
-                  </div>
-              )}
-            </div>
+    <nav className={`fixed top-0 left-0 right-0 z-[200] flex items-center justify-between px-6 md:px-14 h-16 transition-all duration-400 ${scrolled ? 'bg-white/85 backdrop-blur-xl border-b border-black/5 shadow-sm' : 'bg-transparent'}`}>
+      <div className="flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-3 no-underline">
+          <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-gradient-to-br from-[#FF6B35] via-[#E85D3A] to-[#138808] text-white font-serif font-bold text-sm shadow-md">
+            भा
           </div>
-        </div>
+          <span className="font-serif text-base font-semibold text-[#1B1B1F] tracking-tight">Sankalp Portal</span>
+        </Link>
+      </div>
+
+      <div className="hidden lg:flex items-center gap-8">
+        <ul className="flex gap-8 list-none p-0 m-0">
+          <li><Link to="/" className="text-[13px] font-medium tracking-wider text-[#6B6B73] hover:text-[#1B1B1F] transition-colors uppercase no-underline relative group py-1">Home<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35] scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span></Link></li>
+          <li><Link to="/public-feed" className="text-[13px] font-medium tracking-wider text-[#6B6B73] hover:text-[#1B1B1F] transition-colors uppercase no-underline relative group py-1">Feed<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35] scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span></Link></li>
+          <li><Link to="/loksahayak" className="text-[13px] font-bold tracking-wider text-[#FF6B35] hover:opacity-80 transition-opacity uppercase no-underline flex items-center gap-1">LokSahayak</Link></li>
+          <li><Link to="/news-verification" className="text-[13px] font-bold tracking-wider text-[#138808] hover:opacity-80 transition-opacity uppercase no-underline flex items-center gap-1">Verify</Link></li>
+          
+          {isAuthenticated && (
+            <>
+              {user?.role === 'user' && (
+                <li><Link to="/citizen" className="text-[13px] font-medium tracking-wider text-[#6B6B73] hover:text-[#1B1B1F] transition-colors uppercase no-underline relative group py-1">Citizen<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35] scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span></Link></li>
+              )}
+              {user?.role === 'ward_staff' && (
+                <li><Link to="/ward-officer" className="text-[13px] font-medium tracking-wider text-[#6B6B73] hover:text-[#1B1B1F] transition-colors uppercase no-underline relative group py-1">Officer<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35] scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span></Link></li>
+              )}
+              {user?.role === 'admin' && (
+                <li><Link to="/admin" className="text-[13px] font-medium tracking-wider text-[#6B6B73] hover:text-[#1B1B1F] transition-colors uppercase no-underline relative group py-1">Admin<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35] scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span></Link></li>
+              )}
+            </>
+          )}
+        </ul>
+
+        {isAuthenticated ? (
+          <button onClick={handleLogout} className="text-[12px] font-semibold tracking-wider text-red-500 hover:bg-red-50 px-4 py-2 rounded-full transition-all uppercase">Logout</button>
+        ) : (
+          <div className="flex items-center gap-4">
+            <Link to="/login" className="text-[13px] font-bold text-[#1B1B1F] hover:opacity-70 transition-opacity uppercase no-underline">Sign In</Link>
+            <Link to="/signup" className="bg-[#1B1B1F] text-white text-[12px] font-bold px-6 py-2 rounded-full hover:bg-[#FF6B35] transition-all shadow-md uppercase no-underline">Join Now</Link>
+          </div>
+        )}
       </div>
     </nav>
   );
@@ -68,14 +80,11 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-[#F5F7FA] flex flex-col font-sans">
-          {/* Navigation Bar */}
+        <div className="min-h-screen bg-[#FAFAF8] flex flex-col font-sans">
           <Navigation />
 
-          {/* Main Content Area */}
-          <main className="flex-1 w-full flex flex-col">
+          <main className="flex-1 w-full flex flex-col pt-16">
             <Routes>
-              {/* Public Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/public-feed" element={<PublicFeed />} />
               <Route path="/loksahayak" element={<LokSahayak />} />
@@ -83,7 +92,6 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
 
-              {/* Protected Routes */}
               <Route path="/citizen" element={
                 <ProtectedRoute allowedRoles={['user', 'ward_staff', 'admin']}>
                   <CitizenPortal />
@@ -103,6 +111,15 @@ function App() {
               } />
             </Routes>
           </main>
+
+          <footer className="bg-[#1B1B1F] text-white px-6 md:px-14 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="text-center md:text-left">
+              <div className="font-serif text-base font-semibold text-white tracking-wide">Sankalp Civic Portal</div>
+              <div className="text-[12px] text-white/40 mt-1 tracking-wider uppercase">Ministry of Electronics & IT · Digital India Initiative</div>
+            </div>
+            <div className="font-serif text-base italic text-[#C8A84B] tracking-widest">सत्यमेव जयते</div>
+            <div className="text-[11px] text-white/30 uppercase tracking-widest">© 2024 Sankalp. All rights reserved.</div>
+          </footer>
         </div>
       </Router>
     </AuthProvider>

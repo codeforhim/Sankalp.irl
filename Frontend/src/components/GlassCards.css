@@ -1,0 +1,338 @@
+/* ═══════════════════════════════════════════════════════════════
+   GlassCards.css — Glassmorphism overlay cards & animations
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── SECTION WRAPPER ── */
+.glass-section {
+  position: relative;
+  padding: 100px clamp(24px, 5vw, 80px) 120px;
+  max-width: 1360px;
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.glass-section-header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.glass-section-overline {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #FF6B35;
+  margin-bottom: 14px;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1),
+              transform 0.7s cubic-bezier(0.16,1,0.3,1);
+}
+
+.glass-section-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(28px, 3.5vw, 44px);
+  font-weight: 400;
+  color: #1B1B1F;
+  letter-spacing: -0.01em;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s 0.1s cubic-bezier(0.16,1,0.3,1),
+              transform 0.8s 0.1s cubic-bezier(0.16,1,0.3,1);
+}
+
+.glass-section-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 300;
+  color: #8A8A8F;
+  margin-top: 12px;
+  line-height: 1.7;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.8s 0.2s cubic-bezier(0.16,1,0.3,1),
+              transform 0.8s 0.2s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* Reveal header text when section is visible */
+.glass-section.visible .glass-section-overline,
+.glass-section.visible .glass-section-title,
+.glass-section.visible .glass-section-subtitle {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── CARDS GRID ── */
+.glass-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  align-items: stretch;
+}
+
+/* ── BASE GLASS CARD ── */
+.glass-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 18px;
+  padding: 36px 30px 32px;
+  overflow: hidden;
+
+  /* Soft shadow */
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  /* Animation initial state — hidden */
+  opacity: 0;
+  transform: translateY(40px) scale(0.97);
+
+  /* Transition for reveal & hover */
+  transition:
+    opacity 0.8s cubic-bezier(0.16,1,0.3,1),
+    transform 0.8s cubic-bezier(0.16,1,0.3,1),
+    box-shadow 0.4s ease,
+    border-color 0.4s ease;
+
+  cursor: default;
+}
+
+/* Staggered reveal delays */
+.glass-card:nth-child(1) { transition-delay: 0.15s; }
+.glass-card:nth-child(2) { transition-delay: 0.30s; }
+.glass-card:nth-child(3) { transition-delay: 0.45s; }
+
+/* Visible state */
+.glass-section.visible .glass-card {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Floating animation once visible */
+.glass-section.visible .glass-card:nth-child(1) {
+  animation: glassFloat 6s 1.2s ease-in-out infinite;
+}
+.glass-section.visible .glass-card:nth-child(2) {
+  animation: glassFloat 7s 1.8s ease-in-out infinite;
+}
+.glass-section.visible .glass-card:nth-child(3) {
+  animation: glassFloat 5.5s 2.2s ease-in-out infinite;
+}
+
+/* Hover elevation */
+.glass-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.10),
+    0 4px 16px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+/* Accent glow line at top */
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 24px; right: 24px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.glass-card:hover::before {
+  opacity: 1;
+}
+
+.glass-card--about::before {
+  background: linear-gradient(90deg, #FF6B35, #FFa06B);
+}
+.glass-card--features::before {
+  background: linear-gradient(90deg, #1E88E5, #42A5F5);
+}
+.glass-card--insights::before {
+  background: linear-gradient(90deg, #138808, #43A047);
+}
+
+/* ── CARD ICON ── */
+.glass-card-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1),
+              box-shadow 0.4s ease;
+}
+
+.glass-card:hover .glass-card-icon {
+  transform: scale(1.08) translateY(-2px);
+}
+
+.glass-card--about .glass-card-icon {
+  background: linear-gradient(135deg, rgba(255,107,53,0.12), rgba(255,107,53,0.04));
+  box-shadow: 0 4px 16px rgba(255,107,53,0.10);
+}
+.glass-card--features .glass-card-icon {
+  background: linear-gradient(135deg, rgba(30,136,229,0.12), rgba(30,136,229,0.04));
+  box-shadow: 0 4px 16px rgba(30,136,229,0.10);
+}
+.glass-card--insights .glass-card-icon {
+  background: linear-gradient(135deg, rgba(19,136,8,0.12), rgba(19,136,8,0.04));
+  box-shadow: 0 4px 16px rgba(19,136,8,0.10);
+}
+
+/* ── CARD TYPOGRAPHY ── */
+.glass-card-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: #1B1B1F;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+.glass-card-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 14.5px;
+  font-weight: 300;
+  line-height: 1.75;
+  color: #5A5A62;
+}
+
+/* ── FEATURE LIST (Card 2) ── */
+.glass-feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.glass-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: #4A4A50;
+  line-height: 1.6;
+}
+
+.glass-feature-bullet {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(30,136,229,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  margin-top: 1px;
+}
+
+/* ── DATA TAGS (Card 3) ── */
+.glass-data-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.glass-data-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: #3A6B3A;
+  background: rgba(19,136,8,0.06);
+  border: 1px solid rgba(19,136,8,0.12);
+  padding: 6px 14px;
+  border-radius: 100px;
+  transition: background 0.3s, transform 0.25s;
+}
+
+.glass-data-tag:hover {
+  background: rgba(19,136,8,0.12);
+  transform: translateY(-1px);
+}
+
+/* ── FLOATING ANIMATION ── */
+@keyframes glassFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+/* ── DECORATIVE BACKGROUND ACCENTS ── */
+.glass-section-bg {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.glass-section-bg--1 {
+  width: 500px; height: 500px;
+  top: -100px; right: -80px;
+  background: radial-gradient(circle, rgba(30,136,229,0.04) 0%, transparent 70%);
+}
+
+.glass-section-bg--2 {
+  width: 400px; height: 400px;
+  bottom: -80px; left: -60px;
+  background: radial-gradient(circle, rgba(255,107,53,0.04) 0%, transparent 70%);
+}
+
+.glass-section-bg--3 {
+  width: 350px; height: 350px;
+  top: 40%; left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(19,136,8,0.03) 0%, transparent 70%);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 960px) {
+  .glass-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .glass-section {
+    padding: 72px 20px 80px;
+  }
+
+  .glass-card {
+    padding: 28px 24px 26px;
+  }
+}
+
+@media (min-width: 961px) and (max-width: 1200px) {
+  .glass-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .glass-card:nth-child(3) {
+    grid-column: 1 / -1;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+}
