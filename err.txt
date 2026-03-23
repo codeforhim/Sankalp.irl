@@ -1,0 +1,1 @@
+{"response":"I cannot perform this task as it requires additional information that was not provided in the prompt.","actions_taken":["Executed tool: get_ward_complaints"]}

@@ -47,7 +47,9 @@ def process_agent_chat(executor, request: ChatRequest) -> ChatResponse:
         config = {"configurable": {"thread_id": request.user_id}}
         
         context_str = f"The authenticated user_id logging this request is {request.user_id}."
-        enhanced_msg = f"[System Context: {context_str} Do not ask the user for their ID, just use this.]\n\n{request.message}"
+        if request.context:
+            context_str += f" Additional contextual variables: {request.context}"
+        enhanced_msg = f"[System Context: {context_str} Do not ask the user for their ID or context, just use this.]\n\n{request.message}"
 
         # Invoke the robust LangGraph react agent
         # It will autonomously decide whether to use tools or just respond
@@ -58,6 +60,10 @@ def process_agent_chat(executor, request: ChatRequest) -> ChatResponse:
         
         # Extract the final AI textual response
         final_message = result["messages"][-1].content
+
+        with open("debug_messages.txt", "w") as f:
+            for i, msg in enumerate(result["messages"]):
+                f.write(f"[{i}] {msg.type}: {msg.content}\n")
         
         # Basic parsing to see if it used tools in this run by looking through recent messages
         actions = []

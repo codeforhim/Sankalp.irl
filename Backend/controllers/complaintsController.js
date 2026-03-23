@@ -179,7 +179,7 @@ const getComplaintsByWard = async (req, res) => {
             params.push(city_id);
         }
 
-        if (req.user && req.user.role === 'ward_staff') {
+        if (req.user && req.user.role === 'ward_staff' && req.user.civic_body_id) {
             query += ' AND civic_body_id = $' + (params.length + 1);
             params.push(req.user.civic_body_id);
         }

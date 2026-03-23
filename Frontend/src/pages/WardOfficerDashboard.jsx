@@ -360,7 +360,7 @@ const WardOfficerDashboard = () => {
             </div>
 
             {/* AI Agent Chat Widget */}
-            <ChatWidget role="ward_officer" userId={user?.id} />
+            <ChatWidget role="ward_officer" userId={user?.id} extraContext={{ ward_id: user?.ward_id }} />
         </div>
     );
 };

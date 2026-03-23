@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { MessageSquare, X, Send, Bot, User, Play } from 'lucide-react';
 
-const ChatWidget = ({ role, userId }) => {
+const ChatWidget = ({ role, userId, extraContext = {} }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
         { id: 1, text: `Hello! I am your ${role.replace('_', ' ')} AI Assistant. How can I help you today?`, sender: 'bot', actions: [] }
@@ -41,7 +41,7 @@ const ChatWidget = ({ role, userId }) => {
             const response = await axios.post(`${API_URL}/chat/${endpoint}`, {
                 message: userMessage.text,
                 user_id: String(userId || 'anonymous'),
-                context: {}
+                context: extraContext
             });
 
             const botMessage = { 
