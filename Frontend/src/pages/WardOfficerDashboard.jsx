@@ -194,9 +194,12 @@ const WardOfficerDashboard = () => {
     return (
         <div className="w-full max-w-7xl mx-auto p-4 md:p-6 space-y-6">
             <div className="flex justify-between items-center bg-white p-5 rounded-xl border border-[#E5E7EB] shadow-sm mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-[#1F2937]">Ward Officer Command Center</h1>
-                    <p className="text-[#6B7280] text-sm mt-1">Ward {user?.ward_id || 'X'} • Operational Dashboard</p>
+                <div className="flex items-center gap-4">
+                    <img src="/logo.jpeg" alt="LokAyukt" className="w-10 h-10 object-contain" />
+                    <div>
+                        <h1 className="text-2xl font-bold text-[#1F2937]">LokAyukt Officer Command</h1>
+                        <p className="text-[#6B7280] text-sm mt-1">Ward {user?.ward_id || 'X'} • Operational Console</p>
+                    </div>
                 </div>
                 <div className="bg-[#FF9933]/10 text-[#FF7A00] px-4 py-2 rounded-xl font-semibold border border-[#FF9933]/20 shadow-sm">
                     {activeComplaints.filter(c => c.status !== 'resolved').length} Tasks Pending

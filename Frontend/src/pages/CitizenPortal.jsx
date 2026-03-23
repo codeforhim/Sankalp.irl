@@ -220,9 +220,12 @@ const CitizenPortal = () => {
 
             {/* Header and Trust Score */}
             <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl border border-[#E5E7EB] shadow-sm">
-                <div>
-                    <h1 className="text-2xl font-bold text-[#1F2937]">Citizen Reporting Portal</h1>
-                    <p className="text-[#6B7280] text-sm mt-1">Report civic issues instantly and securely</p>
+                <div className="flex items-center gap-4">
+                    <img src="/logo.jpeg" alt="LokAyukt" className="w-10 h-10 object-contain" />
+                    <div>
+                        <h1 className="text-2xl font-bold text-[#1F2937]">LokAyukt Citizen Portal</h1>
+                        <p className="text-[#6B7280] text-sm mt-1">Smart accountability and real-time civic reporting</p>
+                    </div>
                 </div>
                 <div className="mt-4 md:mt-0 flex items-center bg-[#138808]/10 px-4 py-2 rounded-full border border-[#138808]/20">
                     <span className="text-[#138808] font-semibold mr-2">Citizen Credibility Index:</span>

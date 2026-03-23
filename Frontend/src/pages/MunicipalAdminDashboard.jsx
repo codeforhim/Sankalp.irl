@@ -446,9 +446,12 @@ const MunicipalAdminDashboard = () => {
 
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-[#1F2937]">Municipal Decision Intelligence</h1>
-                    <p className="text-[#6B7280] text-sm mt-1">City-wide overview, AI analytics & welfare allocation</p>
+                <div className="flex items-center gap-4">
+                    <img src="/logo.jpeg" alt="LokAyukt" className="w-12 h-12 object-contain" />
+                    <div>
+                        <h1 className="text-2xl font-bold text-[#1F2937]">LokAyukt Admin Intelligence</h1>
+                        <p className="text-[#6B7280] text-sm mt-1">Cross-Department Municipal Command Console</p>
+                    </div>
                 </div>
                 <div className="mt-4 md:mt-0 flex gap-4">
                     <div className="bg-white px-4 py-3 rounded-xl border border-[#E5E7EB] shadow-sm flex items-center border-t-4 border-t-[#1B3A6F]">
