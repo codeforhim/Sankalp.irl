@@ -44,7 +44,8 @@ const createComplaint = async (req, res) => {
                     filename: imageFile.originalname,
                     contentType: imageFile.mimetype
                 });
-                const aiRes = await axios.post('http://ai-service:8000/classify/image', formData, {
+                const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://ai-service:8000';
+                const aiRes = await axios.post(`${AI_SERVICE_URL}/classify/image`, formData, {
                     headers: formData.getHeaders(),
                     timeout: 30000
                 });
@@ -59,7 +60,8 @@ const createComplaint = async (req, res) => {
                     filename: audioFile.originalname,
                     contentType: audioFile.mimetype
                 });
-                const aiRes = await axios.post('http://ai-service:8000/classify/audio', formData, {
+                const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://ai-service:8000';
+                const aiRes = await axios.post(`${AI_SERVICE_URL}/classify/audio`, formData, {
                     headers: formData.getHeaders(),
                     timeout: 30000
                 });
@@ -68,7 +70,8 @@ const createComplaint = async (req, res) => {
                 ai_confidence = aiRes.data.confidence;
             } else if (text_input) {
                 console.log("Sending text to AI classification...");
-                const aiRes = await axios.post('http://ai-service:8000/classify/text', { text: text_input }, {
+                const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://ai-service:8000';
+                const aiRes = await axios.post(`${AI_SERVICE_URL}/classify/text`, { text: text_input }, {
                     timeout: 10000
                 });
                 ai_issue_type = aiRes.data.issue_type;
@@ -322,8 +325,8 @@ const verifyResolution = async (req, res) => {
 
         let aiData;
         try {
-            // Forward to Python FastAPI Container with timeout
-            const aiResponse = await axios.post('http://ml_vision:8080/verify-issue', formData, {
+            const ML_VISION_URL = process.env.ML_VISION_URL || 'http://ml_vision:8080';
+            const aiResponse = await axios.post(`${ML_VISION_URL}/verify-issue`, formData, {
                 headers: {
                     ...formData.getHeaders()
                 },
