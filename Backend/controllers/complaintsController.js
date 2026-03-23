@@ -227,6 +227,44 @@ const updateComplaintStatus = async (req, res) => {
         const complaint = updatedComplaint.rows[0];
         console.log(`Successfully updated complaint ${id} to ${status}`);
 
+        // [Citizen Credibility] Close the poll and calculate scores
+        if (status === 'verified' || status === 'rejected') {
+            const adminVerdict = status === 'verified' ? 'approved' : 'rejected';
+            
+            try {
+                const pollRes = await db.query(
+                    "UPDATE complaint_polls SET is_active = FALSE, admin_verdict = $1, closed_at = CURRENT_TIMESTAMP WHERE complaint_id = $2 RETURNING id",
+                    [adminVerdict, id]
+                );
+                
+                if (pollRes.rowCount > 0) {
+                    const pollId = pollRes.rows[0].id;
+                    const votes = await db.query("SELECT user_id, vote FROM poll_votes WHERE poll_id = $1", [pollId]);
+                    const correctVote = adminVerdict === 'approved' ? 'done' : 'not_done';
+                    
+                    for (const vote of votes.rows) {
+                        if (vote.vote === correctVote) {
+                            await db.query(`
+                                UPDATE users 
+                                SET credibility_score = LEAST(COALESCE(credibility_score, 50) + 5, 100), 
+                                    credibility_votes_correct = COALESCE(credibility_votes_correct, 0) + 1 
+                                WHERE id = $1
+                            `, [vote.user_id]);
+                        } else {
+                            await db.query(`
+                                UPDATE users 
+                                SET credibility_score = GREATEST(COALESCE(credibility_score, 50) - 2, 0)
+                                WHERE id = $1
+                            `, [vote.user_id]);
+                        }
+                    }
+                    console.log(`[Credibility] Processed ${votes.rowCount} votes for poll ${pollId}. Verdict: ${adminVerdict}`);
+                }
+            } catch (pollErr) {
+                console.error(`[Credibility] Error processing votes:`, pollErr.message);
+            }
+        }
+
         // Fire-and-forget: Generate AI communication messages
         // RULE: Only ADMIN actions go to public feed. Ward officer actions only notify the citizen.
         const COMM_AI_URL = process.env.COMMUNICATION_AI_URL || 'http://communication-ai:8001';
@@ -368,6 +406,24 @@ const verifyResolution = async (req, res) => {
 
             if (updateRes.rowCount > 0) {
                 const complaint = updateRes.rows[0];
+                
+                // [Citizen Credibility] Create a poll for citizens to verify the work
+                try {
+                    await db.query(`
+                        INSERT INTO complaint_polls (complaint_id, before_image_url, after_image_url) 
+                        VALUES ($1, $2, $3)
+                        ON CONFLICT (complaint_id) DO UPDATE SET 
+                            before_image_url = EXCLUDED.before_image_url,
+                            after_image_url = EXCLUDED.after_image_url,
+                            is_active = TRUE,
+                            admin_verdict = NULL,
+                            closed_at = NULL
+                    `, [complaint_id, beforeImageUrl, afterImageUrl]);
+                    console.log(`[Poll] Created/Updated poll for complaint ${complaint_id}`);
+                } catch (pollErr) {
+                    console.error(`[Poll] Failed to create poll:`, pollErr.message);
+                }
+
                 const COMM_AI_URL = process.env.COMMUNICATION_AI_URL || 'http://communication-ai:8001';
                 
                 // Fire-and-forget: Notify citizen of preliminary AI assessment

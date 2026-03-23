@@ -9,6 +9,7 @@ const publicRoutes = require('./routes/publicRoutes');
 const welfareRoutes = require('./routes/welfareRoutes');
 const communicationRoutes = require('./routes/communicationRoutes');
 const newsRoutes = require('./routes/newsRoutes');
+const pollsRoutes = require('./routes/pollsRoutes');
 const newsService = require('./services/newsService');
 
 const app = express();
@@ -27,6 +28,7 @@ app.use('/public', publicRoutes);
 app.use('/welfare', welfareRoutes);
 app.use('/communication', communicationRoutes);
 app.use('/news', newsRoutes);
+app.use('/polls', pollsRoutes);
 
 // Basic Route for Healthcheck
 app.get('/', (req, res) => {

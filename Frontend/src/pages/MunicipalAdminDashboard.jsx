@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Users, Activity, DollarSign, Award, AlertTriangle, CheckCircle, XCircle, BarChart2, Zap, RefreshCw } from 'lucide-react';
+import { TrendingUp, Users, Activity, DollarSign, Award, AlertTriangle, CheckCircle, XCircle, BarChart2, Zap, RefreshCw, ThumbsUp, ThumbsDown } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import CivicHeatmap from '../components/CivicHeatmap';
@@ -223,6 +223,82 @@ const WelfareOptimizer = () => {
     );
 };
 
+// ─── Complaint Poll Results Component ─────────────────────────────────────────
+const ComplaintPollResults = ({ complaintId }) => {
+    const [poll, setPoll] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchResults = async () => {
+            try {
+                const res = await api.get(`/polls/complaint/${complaintId}`);
+                if (res.data.exists) {
+                    setPoll(res.data);
+                }
+            } catch (err) {
+                console.error("Failed to fetch poll results:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchResults();
+    }, [complaintId]);
+
+    if (loading) return <div className="text-[10px] text-gray-400 animate-pulse">Fetching citizen consensus...</div>;
+    if (!poll) return <div className="text-[10px] text-gray-400 italic">No poll data available</div>;
+
+    const totalVotes = poll.total_votes || 0;
+    const donePct = totalVotes > 0 ? Math.round((poll.results.done / totalVotes) * 100) : 0;
+    const notDonePct = totalVotes > 0 ? Math.round((poll.results.not_done / totalVotes) * 100) : 0;
+
+    return (
+        <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 mt-3 shadow-sm border-l-4 border-l-[#1B3A6F]">
+            <div className="flex justify-between items-center mb-2">
+                <p className="text-[10px] font-bold text-[#1B3A6F] uppercase tracking-wider">Citizen Ground Reality Poll:</p>
+                <p className="text-[10px] text-[#9CA3AF] font-bold uppercase">{totalVotes} Votes</p>
+            </div>
+            
+            <div className="space-y-2">
+                <div>
+                    <div className="flex justify-between text-[10px] font-bold mb-1">
+                        <span className="text-[#138808] flex items-center gap-1">
+                            <ThumbsUp className="w-3 h-3" /> Work is Done
+                        </span>
+                        <span>{donePct}% ({poll.results.done})</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                        <div className="bg-[#138808] h-full transition-all duration-700" style={{ width: `${donePct}%` }}></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div className="flex justify-between text-[10px] font-bold mb-1">
+                        <span className="text-[#DC2626] flex items-center gap-1">
+                            <ThumbsDown className="w-3 h-3" /> Still Pending
+                        </span>
+                        <span>{notDonePct}% ({poll.results.not_done})</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                        <div className="bg-[#DC2626] h-full transition-all duration-700" style={{ width: `${notDonePct}%` }}></div>
+                    </div>
+                </div>
+            </div>
+
+            {totalVotes > 0 && (
+                <div className={`mt-2 py-1 px-2 rounded text-[9px] font-bold uppercase text-center border ${
+                    donePct >= 70 ? 'bg-green-50 text-[#138808] border-[#138808]/20' : 
+                    notDonePct >= 40 ? 'bg-red-50 text-[#DC2626] border-[#DC2626]/20' : 
+                    'bg-amber-50 text-amber-600 border-amber-200'
+                }`}>
+                    {donePct >= 70 ? 'High Citizen Confidence: Approved' : 
+                     notDonePct >= 40 ? 'Citizen Dissent: Audit Required' : 
+                     'Mixed Feedback: Admin Discretion'}
+                </div>
+            )}
+        </div>
+    );
+};
+
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 const MunicipalAdminDashboard = () => {
     const { user } = useAuth();
@@ -362,6 +438,9 @@ const MunicipalAdminDashboard = () => {
                                             <p className="text-xs text-[#1F2937] italic leading-relaxed">"{complaint.ai_feedback}"</p>
                                         </div>
                                     )}
+
+                                    {/* Citizen Poll Results */}
+                                    <ComplaintPollResults complaintId={complaint.id} />
 
                                     <div className="flex gap-3 mt-4 pt-4 border-t border-[#E5E7EB]">
                                         <button onClick={() => handleAdminOverride(complaint.id, 'reject')}

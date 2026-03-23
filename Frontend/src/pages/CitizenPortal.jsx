@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Mic, MapPin, AlertCircle, CheckCircle } from 'lucide-react';
+import { Camera, Mic, MapPin, AlertCircle, CheckCircle, ThumbsUp, ThumbsDown, Award } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import LocationPickerModal from '../components/LocationPickerModal';
@@ -17,6 +17,9 @@ const CitizenPortal = () => {
     const [recentComplaints, setRecentComplaints] = useState([]);
 
     const [showLocationModal, setShowLocationModal] = useState(false);
+    const [activePolls, setActivePolls] = useState([]);
+    const [leaderboard, setLeaderboard] = useState([]);
+    const [credibilityScore, setCredibilityScore] = useState(50);
 
     // Enforce location picker
     useEffect(() => {
@@ -50,8 +53,40 @@ const CitizenPortal = () => {
         }
     };
 
+    const fetchPollsAndLeaderboard = async () => {
+        try {
+            const [pollsRes, leaderRes] = await Promise.all([
+                api.get('/polls/active'),
+                api.get('/polls/leaderboard')
+            ]);
+            setActivePolls(pollsRes.data);
+            setLeaderboard(leaderRes.data);
+            
+            // Also update credibility score from the leaderboard if user is there, 
+            // or we could fetch user profile directly. For now, try to find user in leaderboard:
+            const userInLeaderboard = leaderRes.data.find(u => u.id === user?.id);
+            if (userInLeaderboard) {
+                 setCredibilityScore(userInLeaderboard.credibility_score);
+            }
+        } catch (error) {
+            console.error("Error fetching polls and leaderboard:", error);
+        }
+    };
+
+    const handleVote = async (pollId, vote) => {
+        try {
+            await api.post(`/polls/${pollId}/vote`, { vote });
+            // Remove poll from active view
+            setActivePolls(prev => prev.filter(p => p.id !== pollId));
+        } catch (err) {
+            console.error("Failed to vote:", err);
+            alert("Failed to submit vote. Please try again.");
+        }
+    };
+
     useEffect(() => {
         fetchComplaints();
+        fetchPollsAndLeaderboard();
     }, []);
 
     const handleImageChange = (e) => {
@@ -135,14 +170,64 @@ const CitizenPortal = () => {
                 </div>
                 <div className="mt-4 md:mt-0 flex items-center bg-[#138808]/10 px-4 py-2 rounded-full border border-[#138808]/20">
                     <span className="text-[#138808] font-semibold mr-2">Citizen Credibility Index:</span>
-                    <span className="text-xl font-bold text-[#138808]">85/100</span>
+                    <span className="text-xl font-bold text-[#138808]">{credibilityScore}/100</span>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
+                {/* Main Column */}
+                <div className="lg:col-span-2 space-y-6">
+
+                    {/* Active Verification Polls */}
+                    {activePolls.length > 0 && (
+                        <div className="bg-white rounded-2xl border border-amber-200 shadow-sm p-5 animate-pulse-slow">
+                            <h2 className="text-lg font-semibold text-amber-600 border-b border-amber-100 pb-2 mb-4 flex items-center">
+                                <AlertCircle className="w-5 h-5 mr-2" />
+                                Ground Truth Verification (Action Required)
+                            </h2>
+                            <p className="text-sm text-[#6B7280] mb-4">
+                                Ward officers claimed the following issues are resolved. Help verify the ground reality to boost your credibility score.
+                            </p>
+                            <div className="space-y-4">
+                                {activePolls.map(poll => (
+                                    <div key={poll.id} className="bg-[#F5F7FA] rounded-xl border border-[#E5E7EB] p-4">
+                                        <h3 className="font-bold text-[#1F2937] mb-2">{poll.text_input || poll.issue_type}</h3>
+                                        <div className="flex gap-4 mb-4">
+                                            <div className="flex-1 text-center">
+                                                <p className="text-xs font-semibold text-[#9CA3AF] mb-1 uppercase">Before</p>
+                                                <div className="h-24 bg-[#EEF2F7] rounded-lg overflow-hidden border border-[#E5E7EB]">
+                                                {poll.before_image_url ? (
+                                                    <img src={poll.before_image_url.startsWith('http') ? poll.before_image_url : `http://localhost:5001${poll.before_image_url}`} alt="Before" className="w-full h-full object-cover" />
+                                                ) : <span className="text-xs flex items-center justify-center h-full text-gray-500">No Image</span>}
+                                                </div>
+                                            </div>
+                                            <div className="flex-1 text-center">
+                                                <p className="text-xs font-semibold text-[#138808] mb-1 uppercase">After (Claimed)</p>
+                                                <div className="h-24 bg-[#EEF2F7] rounded-lg overflow-hidden border border-[#138808]/30">
+                                                {poll.after_image_url ? (
+                                                    <img src={poll.after_image_url.startsWith('http') ? poll.after_image_url : `http://localhost:5001${poll.after_image_url}`} alt="After" className="w-full h-full object-cover" />
+                                                ) : <span className="text-xs flex items-center justify-center h-full text-gray-500">No Image</span>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p className="text-sm text-center font-medium mb-3">Is the work actually done on the ground?</p>
+                                        <div className="flex gap-3">
+                                            <button onClick={() => handleVote(poll.id, 'done')} className="flex-1 py-2 bg-[#138808]/10 text-[#138808] border border-[#138808]/20 hover:bg-[#138808]/20 rounded-lg flex items-center justify-center font-bold text-sm transition">
+                                                <ThumbsUp className="w-4 h-4 mr-2" /> Yes, Verified
+                                            </button>
+                                            <button onClick={() => handleVote(poll.id, 'not_done')} className="flex-1 py-2 bg-[#DC2626]/10 text-[#DC2626] border border-[#DC2626]/20 hover:bg-[#DC2626]/20 rounded-lg flex items-center justify-center font-bold text-sm transition">
+                                                <ThumbsDown className="w-4 h-4 mr-2" /> No, Fake Update
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                 {/* Smart Issue Reporting */}
-                <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm p-5 lg:col-span-2 space-y-4">
+                <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm p-5 space-y-4">
                     <h2 className="text-lg font-semibold text-[#1F2937] border-b border-[#E5E7EB] pb-2">Smart Issue Reporting</h2>
 
                     {success && (
@@ -198,7 +283,6 @@ const CitizenPortal = () => {
                         </div>
                         <span className="text-xs underline font-semibold">Edit</span>
                     </div>
-
                     <button
                         type="submit"
                         disabled={loading}
@@ -207,6 +291,7 @@ const CitizenPortal = () => {
                         {loading ? 'Analyzing issue with AI...' : 'Submit Report'}
                     </button>
                 </form>
+            </div>
 
                 {/* Live Status & Transparency */}
                 <div className="space-y-6 lg:col-span-1">
@@ -232,7 +317,6 @@ const CitizenPortal = () => {
                         </div>
                     </div>
 
-                    {/* Ward Heatmap */}
                     <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm p-5">
                         <h2 className="text-lg font-semibold text-[#1F2937] border-b border-[#E5E7EB] pb-2 mb-4">Ward Transparency Map</h2>
                         {user?.ward_id ? (
@@ -245,6 +329,29 @@ const CitizenPortal = () => {
                                 <span className="text-sm">Set location to view heatmap</span>
                             </div>
                         )}
+                    </div>
+                    
+                    {/* Leaderboard */}
+                    <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm p-5">
+                        <h2 className="text-lg font-semibold text-[#1F2937] border-b border-[#E5E7EB] pb-2 mb-4 flex items-center">
+                            <Award className="w-5 h-5 mr-2 text-[#FF9933]" /> Top Trusted Citizens
+                        </h2>
+                        <div className="space-y-3">
+                            {leaderboard.map((u, index) => (
+                                <div key={u.id} className={`flex items-center justify-between p-2 rounded-lg ${u.id === user?.id ? 'bg-[#1B3A6F]/5 border border-[#1B3A6F]/20' : ''}`}>
+                                    <div className="flex items-center">
+                                        <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold mr-3 ${index < 3 ? 'bg-[#FF9933] text-white' : 'bg-gray-100 text-gray-500'}`}>{index + 1}</span>
+                                        <span className={`text-sm ${u.id === user?.id ? 'font-bold text-[#1B3A6F]' : 'font-medium text-[#1F2937]'}`}>
+                                            {u.id === user?.id ? 'You' : u.email.split('@')[0]}
+                                        </span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-sm font-bold text-[#138808]">{u.credibility_score}/100</span>
+                                    </div>
+                                </div>
+                            ))}
+                            {leaderboard.length === 0 && <p className="text-xs text-gray-500 text-center">No scores yet</p>}
+                        </div>
                     </div>
                 </div>
 
