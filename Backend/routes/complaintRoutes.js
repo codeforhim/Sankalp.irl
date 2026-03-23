@@ -32,4 +32,7 @@ router.patch('/status/:id', authenticateToken, restrictToRole(['ward_staff', 'ad
 // Feature 3: Image Verification explicitly allowing ward staff to submit resolution proof
 router.post('/:id/verify-resolution', authenticateToken, restrictToRole(['ward_staff']), upload.single('after_image'), complaintsController.verifyResolution);
 
+// Admin only: Export ward analytics to Excel
+router.get('/admin/export-pending', authenticateToken, restrictToRole(['admin']), complaintsController.exportPendingWardsData);
+
 module.exports = router;

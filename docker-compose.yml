@@ -55,7 +55,7 @@ services:
     volumes:
       - ./agents:/app
     environment:
-      - BACKEND_URL=http://backend:5000
+      - BACKEND_URL=http://backend:5001
     env_file:
       - ./Backend/.env
     depends_on:

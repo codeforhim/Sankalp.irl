@@ -137,10 +137,12 @@ const CivicHeatmap = ({ targetType, targetId, showPolygons = true }) => {
             zoom={targetType === 'city' ? 11 : 13}
             style={{ height: '100%', width: '100%', zIndex: 0 }}
             className="rounded-xl"
+            preferCanvas={true}
         >
             <TileLayer
                 attribution='&copy; <a href="https://carto.com/">CARTO</a>'
                 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                crossOrigin={true}
             />
             {geoJson && <GeoJSON data={geoJson} style={geoJsonStyle} onEachFeature={onEachFeature} />}
             {points.length > 0 && <HeatLayer points={points} />}

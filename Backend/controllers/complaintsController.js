@@ -1,3 +1,4 @@
+const ExcelJS = require('exceljs');
 const db = require('../config/db');
 const geoService = require('../services/geoService');
 const axios = require('axios');
@@ -472,11 +473,69 @@ const getMyComplaints = async (req, res) => {
     }
 };
 
+const exportPendingWardsData = async (req, res) => {
+    try {
+        const city_id = req.user.city_id; // Assume admin has city_id
+
+        // Fetch pending/resolved complaints grouped by ward
+        const query = `
+            SELECT 
+                c.ward_id,
+                COUNT(*) FILTER (WHERE c.status = 'reported' OR c.status = 'assigned' OR c.status = 'in_progress') as active_count,
+                COUNT(*) FILTER (WHERE c.status = 'resolved' OR c.status = 'flagged_for_review') as pending_verification_count,
+                COUNT(*) FILTER (WHERE c.status = 'verified') as resolved_count,
+                ROUND(AVG(EXTRACT(EPOCH FROM (COALESCE(c.updated_at, CURRENT_TIMESTAMP) - c.created_at))/3600)::numeric, 2) as avg_resolution_hours
+            FROM complaints c
+            WHERE c.city_id = $1
+            GROUP BY c.ward_id
+            ORDER BY c.ward_id ASC
+        `;
+        
+        const result = await db.query(query, [city_id]);
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Ward Performance');
+
+        worksheet.columns = [
+            { header: 'Ward ID', key: 'ward_id', width: 10 },
+            { header: 'Active Issues', key: 'active_count', width: 15 },
+            { header: 'Pending Verification', key: 'pending_verification_count', width: 25 },
+            { header: 'Verified/Closed', key: 'resolved_count', width: 15 },
+            { header: 'Avg Resolution (Hrs)', key: 'avg_resolution_hours', width: 20 }
+        ];
+
+        result.rows.forEach(row => {
+            worksheet.addRow(row);
+        });
+
+        // Styling the header
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF1B3A6F' }
+        };
+        worksheet.getRow(1).font = { color: { argb: 'FFFFFFFF' }, bold: true };
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=Ward_Analytics.xlsx');
+
+        await workbook.xlsx.write(res);
+        res.end();
+
+    } catch (error) {
+        console.error("Export Error:", error);
+        res.status(500).json({ message: 'Server error generating Excel report' });
+    }
+};
+
 module.exports = {
     createComplaint,
     getComplaintsByCity,
     getComplaintsByWard,
     updateComplaintStatus,
     verifyResolution,
-    getMyComplaints
+    getMyComplaints,
+    exportPendingWardsData
 };
+
