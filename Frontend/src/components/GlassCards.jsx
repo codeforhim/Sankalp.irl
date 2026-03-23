@@ -39,13 +39,13 @@ export default function GlassCards() {
 
       {/* Section Header */}
       <div className="glass-section-header">
-        <p className="glass-section-overline">Why This Platform</p>
+        <p className="glass-section-overline">Why LokAyukt?</p>
         <h2 className="glass-section-title">
-          Explore India Like Never Before
+          Smart Governance & Global Accountability
         </h2>
         <p className="glass-section-subtitle">
-          An interactive experience bringing together culture, data, and
-          storytelling across every state and territory.
+          A next-generation platform for real-time grievance tracking, verified ground-truth, 
+          and transparent municipal administration.
         </p>
       </div>
 
@@ -53,40 +53,39 @@ export default function GlassCards() {
       <div className="glass-cards-grid">
         {/* ── Card 1: About the Platform ── */}
         <div className="glass-card glass-card--about">
-          <div className="glass-card-icon">🗺️</div>
-          <h3 className="glass-card-title">About the Platform</h3>
+          <div className="glass-card-icon">🏛️</div>
+          <h3 className="glass-card-title">Accountable Governance</h3>
           <p className="glass-card-desc">
-            The India Heritage Portal gives you a cinematic, interactive map
-            of the entire nation. Explore every state and union territory —
-            from the snow-capped Himalayas to the tropical coast of Kerala —
-            and uncover rich stories of culture, history, cuisine, and
-            heritage — all in one beautifully crafted experience.
+            LokAyukt bridges the trust gap between citizens and authorities. 
+            By providing a transparent, map-based interface for reporting and 
+            monitoring civic issues, we ensure that every complaint is tracked, 
+            verified, and resolved with full public accountability.
           </p>
         </div>
 
         {/* ── Card 2: Key Features ── */}
         <div className="glass-card glass-card--features">
-          <div className="glass-card-icon">⚡</div>
-          <h3 className="glass-card-title">Key Features</h3>
+          <div className="glass-card-icon">🤖</div>
+          <h3 className="glass-card-title">AI-Powered Verification</h3>
           <p className="glass-card-desc">
-            Designed for curiosity-driven exploration with a premium feel:
+            Ensuring ground-truth through advanced multi-modal AI and citizen consensus:
           </p>
           <ul className="glass-feature-list">
             <li className="glass-feature-item">
-              <span className="glass-feature-bullet">🖱️</span>
-              Clickable states with instant detail panels
+              <span className="glass-feature-bullet">📸</span>
+              AI-driven 'Before & After' photo verification
             </li>
             <li className="glass-feature-item">
-              <span className="glass-feature-bullet">💬</span>
-              Dynamic data popups on hover and selection
+              <span className="glass-feature-bullet">⚖️</span>
+              Citizen-led consensus polls for resolution audits
             </li>
             <li className="glass-feature-item">
-              <span className="glass-feature-bullet">🎥</span>
-              Cinematic map visualization with smooth animations
+              <span className="glass-feature-bullet">🧠</span>
+              Automated issue classification & department routing
             </li>
             <li className="glass-feature-item">
-              <span className="glass-feature-bullet">🔍</span>
-              Interactive exploration of 28 states &amp; 8 UTs
+              <span className="glass-feature-bullet">📍</span>
+              Geo-fenced reporting to prevent false signatures
             </li>
           </ul>
         </div>
@@ -94,20 +93,19 @@ export default function GlassCards() {
         {/* ── Card 3: Data Insights ── */}
         <div className="glass-card glass-card--insights">
           <div className="glass-card-icon">📊</div>
-          <h3 className="glass-card-title">Data Insights</h3>
+          <h3 className="glass-card-title">Actionable Insights</h3>
           <p className="glass-card-desc">
-            Go beyond the surface. The platform surfaces curated insights
-            into each state — spanning demographics, economy, geography,
-            languages, and cultural heritage — giving you a comprehensive
-            view of India&apos;s incredible diversity.
+            Data-driven intelligence for municipal administrators. Our platform 
+            analyzes spatial clusters and resolution metrics to optimize resource 
+            allocation and identify systemic civic bottlenecks across wards.
           </p>
           <div className="glass-data-tags">
-            <span className="glass-data-tag">📈 Population</span>
-            <span className="glass-data-tag">💰 Economy</span>
-            <span className="glass-data-tag">🏔️ Geography</span>
-            <span className="glass-data-tag">🗣️ Languages</span>
-            <span className="glass-data-tag">🎭 Culture</span>
-            <span className="glass-data-tag">🍲 Cuisine</span>
+            <span className="glass-data-tag">📍 Heatmaps</span>
+            <span className="glass-data-tag">📉 Efficiency</span>
+            <span className="glass-data-tag">🏘️ Ward Lead</span>
+            <span className="glass-data-tag">🤝 Trust Score</span>
+            <span className="glass-data-tag">🔍 Audits</span>
+            <span className="glass-data-tag">🚀 Resolution</span>
           </div>
         </div>
       </div>

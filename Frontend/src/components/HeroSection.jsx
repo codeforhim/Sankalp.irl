@@ -35,13 +35,15 @@ function StatBlock({ num, label, delay = 0, trigger }) {
 
 /* ── Title words configuration ── */
 const TITLE_WORDS = [
-  { text: "Discover",   className: "hero-word",                delay: 0.35 },
+  { text: "स्थानीय शासन होगा",   className: "hero-word",                delay: 0.35 },
   { text: " ",          className: "hero-word",                delay: 0.42, space: true },
-  { text: "Incredible", className: "hero-word hero-word--accent", delay: 0.50 },
-];
+  { text: "संयुक्त,", className: "hero-word hero-word--accent", delay: 0.50 },
+]
 
 const TITLE_WORDS_LINE2 = [
-  { text: "Bhārat",     className: "hero-word hero-word--bold",   delay: 0.65 },
+  { text: "जब भारत चुनेगा",   className: "hero-word",                delay: 0.65 },
+  { text: " ",          className: "hero-word",                delay: 0.72, space: true },
+  { text: "लोकायुक्त।", className: "hero-word hero-word--accent", delay: 0.80 },
 ];
 
 /* ═══════════════════════════════════════════
@@ -84,19 +86,19 @@ export default function HeroSection({ heroRef, heroVis, scrollY }) {
         className={`hero-glass-card hero-glass-card--left${cardsFloating ? " floating" : ""}`}
         style={cardsFloating ? undefined : { transform: `translateY(${-pxCardL}px)` }}
       >
-        <div className="hero-glass-card-icon">🗺️</div>
-        <div className="hero-glass-card-title">Interactive Cultural Map</div>
+        <div className="hero-glass-card-icon">🏛️</div>
+        <div className="hero-glass-card-title">Accountable Governance</div>
         <div className="hero-glass-card-desc">
-          Explore traditions, languages, and heritage across every state and territory.
+          Direct connection between citizens and municipal authorities for rapid resolution.
         </div>
         <ul className="hero-glass-card-list">
-          <li>🖱️ Click any state to explore</li>
-          <li>🎭 Culture, history &amp; cuisine</li>
-          <li>🎥 Cinematic map experience</li>
+          <li>📢 Real-time grievance tracking</li>
+          <li>🛡️ Verified ground-truth checks</li>
+          <li>✅ Transparent officer accountability</li>
         </ul>
         <div className="hero-glass-card-stat">
-          <span className="hero-glass-card-stat-num">36</span>
-          <span className="hero-glass-card-stat-label">Regions to Explore</span>
+          <span className="hero-glass-card-stat-num">98%</span>
+          <span className="hero-glass-card-stat-label">Resolution Rate</span>
         </div>
       </div>
 
@@ -106,33 +108,33 @@ export default function HeroSection({ heroRef, heroVis, scrollY }) {
         style={cardsFloating ? undefined : { transform: `translateY(${-pxCardR}px)` }}
       >
         <div className="hero-glass-card-icon">📊</div>
-        <div className="hero-glass-card-title">Cultural Insights</div>
+        <div className="hero-glass-card-title">City Heatmap Analytics</div>
         <div className="hero-glass-card-desc">
-          Visualise India's incredible diversity through interactive data and storytelling.
+          AI-powered spatial insights to identify and eliminate civic bottlenecks.
         </div>
         <ul className="hero-glass-card-list">
-          <li>📈 Population &amp; demographics</li>
-          <li>💰 Economy &amp; trade data</li>
-          <li>🏔️ Geography &amp; terrain</li>
+          <li>📍 Spatial issue clustering</li>
+          <li>📈 Predictive ward analytics</li>
+          <li>🎯 Targeted resource allocation</li>
         </ul>
         <div className="hero-glass-card-stat">
-          <span className="hero-glass-card-stat-num">1.4B</span>
-          <span className="hero-glass-card-stat-label">People, One Story</span>
+          <span className="hero-glass-card-stat-num">24/7</span>
+          <span className="hero-glass-card-stat-label">Active Monitoring</span>
         </div>
       </div>
 
       {/* ── Floating Micro-Badges — decorative pills ── */}
       <div className="hero-micro-badge hero-micro-badge--1" style={cardsFloating ? undefined : { transform: `translateY(${-pxOrb * 1.5}px)` }}>
-        🏛️ <span>40 UNESCO Sites</span>
+        🤖 <span>AI Verification</span>
       </div>
       <div className="hero-micro-badge hero-micro-badge--2" style={cardsFloating ? undefined : { transform: `translateY(${-pxOrb * 2}px)` }}>
-        🗣️ <span>22 Official Languages</span>
+        🏙️ <span>Ward Lead</span>
       </div>
       <div className="hero-micro-badge hero-micro-badge--3" style={cardsFloating ? undefined : { transform: `translateY(${-pxOrb}px)` }}>
-        💃 <span>8 Classical Dances</span>
+        🔒 <span>Encrypted Tracking</span>
       </div>
       <div className="hero-micro-badge hero-micro-badge--4" style={cardsFloating ? undefined : { transform: `translateY(${-pxOrb * 1.2}px)` }}>
-        🍛 <span>31 State Cuisines</span>
+        🌍 <span>Citizen-Led</span>
       </div>
 
       {/* ── Hero Content ── */}
@@ -142,8 +144,8 @@ export default function HeroSection({ heroRef, heroVis, scrollY }) {
       >
         {/* Glass badge */}
         <div className="hero-glass-badge">
-          <span className="hero-badge-dot" />
-          Government of India · Ministry of Culture
+          <img src="/logo.jpeg" alt="Logo" className="w-4 h-4 object-contain" />
+          LokAyukt · Smart Governance Platform
         </div>
 
         {/* Staggered title */}
@@ -178,8 +180,8 @@ export default function HeroSection({ heroRef, heroVis, scrollY }) {
 
         {/* Subtitle */}
         <p className="hero-sub">
-          Three thousand years of unbroken civilisation, twenty-two classical
-          languages, and a billion stories — all waiting to be explored, one state at a time.
+          A next-generation AI governance platform bridging the gap between citizens and authorities. 
+          Report, verify, and resolve — ensuring Every Voice counts.
         </p>
 
         {/* Divider */}
@@ -190,17 +192,17 @@ export default function HeroSection({ heroRef, heroVis, scrollY }) {
         </div>
 
         {/* Premium CTA */}
-        <a href="#map" className="hero-cta">
-          Explore the Map
+        <a href="/public-feed" className="hero-cta">
+          View Public Feed
           <span className="hero-cta-arrow">→</span>
         </a>
 
         {/* Animated statistics */}
         <div className="hero-stats">
-          <StatBlock num="28" label="States" delay={0} trigger={heroVis} />
-          <StatBlock num="8" label="Union Territories" delay={100} trigger={heroVis} />
-          <StatBlock num="22" label="Languages" delay={200} trigger={heroVis} />
-          <StatBlock num="1.4" label="Billion Citizens" delay={300} trigger={heroVis} />
+          <StatBlock num="150" label="Active Wards" delay={0} trigger={heroVis} />
+          <StatBlock num="12" label="Govt Departments" delay={100} trigger={heroVis} />
+          <StatBlock num="4.8" label="Trust Score" delay={200} trigger={heroVis} />
+          <StatBlock num="10" label="K+ Resolutions" delay={300} trigger={heroVis} />
         </div>
       </div>
 

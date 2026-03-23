@@ -34,10 +34,8 @@ const Navigation = () => {
     <nav className={`fixed top-0 left-0 right-0 z-[200] flex items-center justify-between px-6 md:px-14 h-16 transition-all duration-400 ${scrolled ? 'bg-white/85 backdrop-blur-xl border-b border-black/5 shadow-sm' : 'bg-transparent'}`}>
       <div className="flex items-center gap-3">
         <Link to="/" className="flex items-center gap-3 no-underline">
-          <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-gradient-to-br from-[#FF6B35] via-[#E85D3A] to-[#138808] text-white font-serif font-bold text-sm shadow-md">
-            भा
-          </div>
-          <span className="font-serif text-base font-semibold text-[#1B1B1F] tracking-tight">Sankalp Portal</span>
+          <img src="/logo.jpeg" alt="LokAyukt Logo" className="w-8 h-8 object-contain shadow-sm" />
+          <span className="font-serif text-base font-semibold text-[#1B1B1F] tracking-tight">LokAyukt</span>
         </Link>
       </div>
 
@@ -114,11 +112,14 @@ function App() {
 
           <footer className="bg-[#1B1B1F] text-white px-6 md:px-14 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-center md:text-left">
-              <div className="font-serif text-base font-semibold text-white tracking-wide">Sankalp Civic Portal</div>
-              <div className="text-[12px] text-white/40 mt-1 tracking-wider uppercase">Ministry of Electronics & IT · Digital India Initiative</div>
+              <div className="flex items-center gap-2 mb-1">
+                <img src="/logo.jpeg" alt="Logo" className="w-6 h-6 brightness-0 invert opacity-80" />
+                <div className="font-serif text-base font-semibold text-white tracking-wide">LokAyukt</div>
+              </div>
+              <div className="text-[12px] text-white/40 mt-1 tracking-wider uppercase">National Grievance & Accountability Portal · Digital India</div>
             </div>
             <div className="font-serif text-base italic text-[#C8A84B] tracking-widest">सत्यमेव जयते</div>
-            <div className="text-[11px] text-white/30 uppercase tracking-widest">© 2024 Sankalp. All rights reserved.</div>
+            <div className="text-[11px] text-white/30 uppercase tracking-widest">© 2026 LokAyukt. All rights reserved.</div>
           </footer>
         </div>
       </Router>
