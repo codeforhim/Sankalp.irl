@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, GeoJSON, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { MapPin, Navigation, CheckCircle, AlertTriangle } from 'lucide-react';
@@ -34,6 +34,22 @@ const LocationPickerModal = ({ onClose, forceOpen = false }) => {
     const [position, setPosition] = useState(null);
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
+    const [wardPolygons, setWardPolygons] = useState(null);
+    const [selectedWardInfo, setSelectedWardInfo] = useState(null);
+
+    // Fetch ward boundaries on mount
+    useEffect(() => {
+        const fetchWards = async () => {
+            try {
+                // Delhi City ID is 2 in this database
+                const res = await api.get('/map/wards/2');
+                setWardPolygons(res.data);
+            } catch (err) {
+                console.error("Failed to load ward boundaries:", err);
+            }
+        };
+        fetchWards();
+    }, []);
 
     const handleConfirm = async () => {
         if (!position) return;
@@ -53,7 +69,8 @@ const LocationPickerModal = ({ onClose, forceOpen = false }) => {
                 updateUser({
                     latitude: position.lat,
                     longitude: position.lng,
-                    ward_id: res.data.ward_id
+                    ward_id: res.data.ward_id,
+                    ward_name: res.data.ward_name 
                 });
             }
 
@@ -114,12 +131,58 @@ const LocationPickerModal = ({ onClose, forceOpen = false }) => {
                         zoom={11} 
                         style={{ height: '100%', width: '100%' }}
                         className="z-0"
+                        preferCanvas={true}
                     >
                         <TileLayer
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+                            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                            crossOrigin={true}
                         />
-                        <LocationMarker position={position} setPosition={setPosition} />
+                        {wardPolygons && (
+                            <GeoJSON 
+                                data={wardPolygons} 
+                                style={{
+                                    color: '#FFFFFF', // Bright White for high contrast
+                                    weight: 2,
+                                    opacity: 0.9,
+                                    fillColor: '#4f46e5',
+                                    fillOpacity: 0.05,
+                                }}
+                                onEachFeature={(feature, layer) => {
+                                    if (feature.properties && feature.properties.ward_id) {
+                                        layer.bindTooltip(`${feature.properties.name || feature.properties.ward_id}`, {
+                                            permanent: true, // Always visible like admin side
+                                            direction: 'center',
+                                            className: '!bg-[#1F2937]/80 !backdrop-blur-sm !border !border-white/20 !text-white !font-bold !text-[10px] !rounded-md !px-2 !py-0.5 !shadow-xl'
+                                        });
+
+                                        layer.on({
+                                            mouseover: (e) => {
+                                                const l = e.target;
+                                                l.setStyle({ fillOpacity: 0.4, weight: 3, color: '#FF9933' });
+                                            },
+                                            mouseout: (e) => {
+                                                const l = e.target;
+                                                l.setStyle({ fillOpacity: 0.05, weight: 2, color: '#4f46e5' });
+                                            },
+                                            click: (e) => {
+                                                setPosition(e.latlng);
+                                                setSelectedWardInfo({
+                                                    ward_id: feature.properties.ward_id,
+                                                    name: feature.properties.name
+                                                });
+                                                // Prevent event from bubbling to map click
+                                                L.DomEvent.stopPropagation(e);
+                                            }
+                                        });
+                                    }
+                                }}
+                            />
+                        )}
+                        <LocationMarker position={position} setPosition={(latlng) => {
+                            setPosition(latlng);
+                            setSelectedWardInfo(null); // Reset ward info if they click outside a polygon
+                        }} />
                     </MapContainer>
 
                     {/* Overlay GPS Button */}
@@ -148,7 +211,14 @@ const LocationPickerModal = ({ onClose, forceOpen = false }) => {
                     <div className="flex justify-between items-center">
                         <div className="text-sm font-medium">
                             {position ? (
-                                <span className="text-emerald-400">Location Selected: {position.lat.toFixed(4)}, {position.lng.toFixed(4)}</span>
+                                <div className="flex flex-col">
+                                    <span className="text-emerald-400 font-bold flex items-center gap-1">
+                                        <CheckCircle className="w-4 h-4" /> Location Selected
+                                    </span>
+                                    <span className="text-xs text-slate-300 font-medium">
+                                        {selectedWardInfo ? `${selectedWardInfo.name}` : `Searching ward...`}
+                                    </span>
+                                </div>
                             ) : (
                                 <span className="text-amber-500 flex items-center">
                                     <AlertTriangle className="w-4 h-4 mr-2" />

@@ -176,6 +176,7 @@ const CitizenPortal = () => {
         if (user?.ward_id) {
             formData.append('ward_id', user.ward_id);
         }
+        // Also send ward_name if available for better AI context, though backend handles it
 
         try {
             const res = await api.post('/complaints/create', formData, {
@@ -380,7 +381,7 @@ const CitizenPortal = () => {
                     >
                         <div className="flex items-center">
                             <MapPin className="w-4 h-4 mr-2" />
-                            <span>{user?.ward_id ? `Ward ${user.ward_id} — Location Set` : 'Set your location'}</span>
+                            <span>{user?.ward_name ? `${user.ward_name} — Location Set` : 'Set your location'}</span>
                         </div>
                         <span className="text-xs underline font-semibold">Edit</span>
                     </div>

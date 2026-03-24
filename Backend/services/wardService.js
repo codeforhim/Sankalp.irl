@@ -5,7 +5,7 @@ const db = require('../config/db');
  * PostGIS uses Longitude (X), Latitude (Y)
  * @param {number} latitude 
  * @param {number} longitude 
- * @returns {Promise<number|null>} ward_id or null if outside all bounds
+ * @returns {Promise<{id: number, name: string}|null>} ward_id and name or null if outside all bounds
  */
 const findWardByCoordinates = async (latitude, longitude) => {
     try {
@@ -13,16 +13,14 @@ const findWardByCoordinates = async (latitude, longitude) => {
             SELECT id, ward_name AS name
             FROM wards
             WHERE ST_Contains(polygon_geometry, ST_SetSRID(ST_MakePoint($1, $2), 4326))
+            AND city_id = 2
             LIMIT 1;
         `;
         
         // Note: ST_MakePoint takes (longitude, latitude)
-        const result = await db.query(query, [longitude, latitude]);
+        const result = await db.query(query, [parseFloat(longitude), parseFloat(latitude)]);
         
-        if (result.rows.length > 0) {
-            return result.rows[0].id;
-        }
-        return null;
+        return result.rows[0] || null;
     } catch (error) {
         console.error('Error in findWardByCoordinates:', error);
         throw error;

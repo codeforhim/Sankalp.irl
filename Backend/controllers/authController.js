@@ -162,12 +162,16 @@ const loginUser = async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
+        const wardRes = user.ward_id ? await db.query('SELECT ward_name FROM wards WHERE id = $1', [user.ward_id]) : null;
+        const wardName = wardRes?.rows[0]?.ward_name || null;
+
         const token = generateToken({ id: user.id, role: 'user', ward_id: user.ward_id });
         res.json({ token, user: { 
             id: user.id, 
             email: user.email, 
             trust_score: user.trust_score,
             ward_id: user.ward_id,
+            ward_name: wardName,
             latitude: user.latitude,
             longitude: user.longitude
         } });
@@ -187,12 +191,17 @@ const updateUserLocation = async (req, res) => {
             return res.status(400).json({ message: 'Latitude and longitude are required' });
         }
 
-        let wardId = await wardService.findWardByCoordinates(latitude, longitude);
+        const ward = await wardService.findWardByCoordinates(latitude, longitude);
+        let wardId = ward?.id;
+        let wardName = ward?.name;
         
         let assignedMsg = 'Ward updated successfully';
         if (!wardId) {
             console.warn(`[Location] Coordinates ${latitude},${longitude} not within any ward polygon. Assigning fallback Ward 1.`);
-            wardId = 1; 
+            // Fallback to Ward 1 (Hardcoded search for simplicity or just ID 1 if known)
+            const fallback = await db.query("SELECT id, ward_name FROM wards WHERE city_id = 2 AND ward_number = '1' LIMIT 1");
+            wardId = fallback.rows[0]?.id || 1;
+            wardName = fallback.rows[0]?.ward_name || 'Ward 1';
             assignedMsg = 'Location falls outside defined ward bounds. Assigned fallback Ward 1.';
         }
 
@@ -205,7 +214,8 @@ const updateUserLocation = async (req, res) => {
             message: assignedMsg,
             latitude,
             longitude,
-            ward_id: wardId
+            ward_id: wardId,
+            ward_name: wardName
         });
     } catch (error) {
         console.error('Update Location Error:', error);

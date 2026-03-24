@@ -72,8 +72,8 @@ const CivicHeatmap = ({ targetType, targetId, showPolygons = true }) => {
                     // To do a single ward geometry, we could add a new endpoint, 
                     // but for simplicity, we'll fetch all city wards and filter out the target ward
                     else if (targetType === 'ward') {
-                        // Assuming city is 1 (Delhi)
-                        const geoRes = await api.get(`/map/wards/1`);
+                        // Fetch Delhi (City ID 2) ward boundaries
+                        const geoRes = await api.get(`/map/wards/2`);
 
                         // Filter for just this ward
                         const feature = geoRes.data.features.find(f => f.properties.ward_id === targetId);
@@ -113,30 +113,29 @@ const CivicHeatmap = ({ targetType, targetId, showPolygons = true }) => {
 
     // Styling for the GeoJSON ward boundaries
     const geoJsonStyle = {
-        color: '#6366f1', // Indigo 500
+        color: '#FFFFFF', // Bright White
         weight: 2,
-        opacity: 0.6,
+        opacity: 0.9,
         fillColor: '#4f46e5',
-        fillOpacity: 0.05,
-        dashArray: '5, 5'
+        fillOpacity: 0.05
     };
 
     const onEachFeature = (feature, layer) => {
         if (feature.properties && feature.properties.ward_id) {
-            layer.bindTooltip(`Ward ${feature.properties.ward_id}`, {
-                permanent: true,
-                direction: 'center',
-                className: '!bg-[#1F2937]/60 !backdrop-blur-sm !border !border-white/10 !text-white !font-bold !text-xs !rounded-full !px-3 !py-1 !shadow-lg'
-            });
+            layer.bindTooltip(`${feature.properties.name || feature.properties.ward_id}`, {
+            permanent: true, // Permanent labels like admin view
+            direction: 'center',
+            className: '!bg-[#1F2937]/80 !backdrop-blur-sm !border !border-white/20 !text-white !font-bold !text-[10px] !rounded-md !px-2 !py-0.5 !shadow-xl'
+        });
         }
     };
 
     return (
         <MapContainer
             center={defaultCenter}
-            zoom={targetType === 'city' ? 11 : 13}
-            style={{ height: '100%', width: '100%', zIndex: 0 }}
-            className="rounded-xl"
+            zoom={11}
+            style={{ height: '100%', width: '100%', background: '#0f172a' }}
+            className="rounded-xl overflow-hidden shadow-inner"
             preferCanvas={true}
         >
             <TileLayer
