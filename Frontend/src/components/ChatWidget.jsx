@@ -30,8 +30,8 @@ const ChatWidget = ({ role, userId, extraContext = {} }) => {
 
         try {
             // Note: In production, the API URL should point to your backend/gateway that proxies to the agent service
-            // For local docker-compose, assuming frontend maps to localhost:8003 for the agents
-            const API_URL = import.meta.env.VITE_AGENTS_URL || 'http://localhost:8003';
+            // For local docker-compose, assuming frontend maps to localhost:8000 for the agents
+            const API_URL = import.meta.env.VITE_AGENTS_URL || 'http://localhost:8000';
             
             // Map the frontend role to the corresponding agent endpoint
             let endpoint = 'citizen';
@@ -55,7 +55,7 @@ const ChatWidget = ({ role, userId, extraContext = {} }) => {
             console.error("Chat Error:", error);
             setMessages(prev => [...prev, { 
                 id: Date.now(), 
-                text: "I'm having trouble connecting to my neural network right now. Please make sure the Agent Service is running on port 8003.", 
+                text: "I'm having trouble connecting to my neural network right now. Please make sure the Agent Service is running on port 8000.", 
                 sender: 'bot',
                 actions: [] 
             }]);

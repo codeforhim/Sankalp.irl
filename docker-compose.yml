@@ -23,43 +23,18 @@ services:
       npx nodemon -L server.js
       "
     depends_on:
-      - ai-service
-      - communication-ai
+      - unified-ai
 
-  ai-service:
+  unified-ai:
     build:
-      context: ./services/ai-service
+      context: ./Unified-AI
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
     volumes:
-      - ./services/ai-service:/app
-
-  communication-ai:
-    build:
-      context: ./services/communication-ai
-      dockerfile: Dockerfile
-    ports:
-      - "8002:8001"
-    volumes:
-      - ./services/communication-ai:/app
+      - ./Unified-AI:/app
     env_file:
       - ./Backend/.env
-
-  agents:
-    build:
-      context: ./agents
-      dockerfile: Dockerfile
-    ports:
-      - "8003:8000"
-    volumes:
-      - ./agents:/app
-    environment:
-      - BACKEND_URL=http://backend:5001
-    env_file:
-      - ./Backend/.env
-    depends_on:
-      - backend
 
   frontend:
     build:
@@ -73,22 +48,6 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
       - VITE_USE_POLLING=true
-    depends_on:
-      - backend
-
-  ml_vision:
-    build:
-      context: ./Feature3
-      dockerfile: Dockerfile
-    ports:
-      - "8081:8080"
-    volumes:
-      - ./Feature3:/app
-    environment:
-      - NODE_OPTIONS=--dns-result-order=ipv4first
-      - NODE_TLS_REJECT_UNAUTHORIZED=0
-    env_file:
-      - ./Backend/.env
     depends_on:
       - backend
 

@@ -46,7 +46,7 @@ const createComplaint = async (req, res) => {
                     filename: imageFile.originalname,
                     contentType: imageFile.mimetype
                 });
-                const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://ai-service:8000';
+                const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://unified-ai:8000';
                 const aiRes = await axios.post(`${AI_SERVICE_URL}/classify/image`, formData, {
                     headers: formData.getHeaders(),
                     timeout: 30000
@@ -62,7 +62,7 @@ const createComplaint = async (req, res) => {
                     filename: audioFile.originalname,
                     contentType: audioFile.mimetype
                 });
-                const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://ai-service:8000';
+                const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://unified-ai:8000';
                 const aiRes = await axios.post(`${AI_SERVICE_URL}/classify/audio`, formData, {
                     headers: formData.getHeaders(),
                     timeout: 30000
@@ -269,7 +269,7 @@ const updateComplaintStatus = async (req, res) => {
 
         // Fire-and-forget: Generate AI communication messages
         // RULE: Only ADMIN actions go to public feed. Ward officer actions only notify the citizen.
-        const COMM_AI_URL = process.env.COMMUNICATION_AI_URL || 'http://communication-ai:8001';
+        const COMM_AI_URL = process.env.COMMUNICATION_AI_URL || 'http://unified-ai:8000';
         const departmentStringMap = {
             1: "Public Works Department (PWD)",
             2: "Water Works Department",
@@ -365,7 +365,7 @@ const verifyResolution = async (req, res) => {
 
         let aiData;
         try {
-            const ML_VISION_URL = process.env.ML_VISION_URL || 'http://ml_vision:8080';
+            const ML_VISION_URL = process.env.ML_VISION_URL || 'http://unified-ai:8000';
             const aiResponse = await axios.post(`${ML_VISION_URL}/verify-issue`, formData, {
                 headers: {
                     ...formData.getHeaders()
@@ -426,7 +426,7 @@ const verifyResolution = async (req, res) => {
                     console.error(`[Poll] Failed to create poll:`, pollErr.message);
                 }
 
-                const COMM_AI_URL = process.env.COMMUNICATION_AI_URL || 'http://communication-ai:8001';
+                const COMM_AI_URL = process.env.COMMUNICATION_AI_URL || 'http://unified-ai:8000';
                 
                 // Fire-and-forget: Notify citizen of preliminary AI assessment
                 (async () => {
