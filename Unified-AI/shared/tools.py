@@ -17,19 +17,10 @@ def get_user_complaints(user_id: str) -> str:
         response.raise_for_status()
         data = response.json()
         if isinstance(data, list):
-            filtered_data = []
-            for c in data:
-                filtered_data.append({
-                    "id": c.get("id"),
-                    "type": c.get("issue_type"),
-                    "status": c.get("status"),
-                    "priority": c.get("priority_score"),
-                    "desc": c.get("text_input")
-                })
-            original_len = len(filtered_data)
-            data = filtered_data[:3]
-            if original_len > 3:
-                data.append({"info": f"({original_len - 3} more hidden)"})
+            original_len = len(data)
+            data = data[:10]
+            if original_len > 10:
+                data.append({"info": f"There are more records ({original_len - 10} hidden) not shown to save space."})
         return json.dumps(data)
     except Exception as e:
         return json.dumps([{"error": str(e)}])
@@ -59,19 +50,10 @@ def get_ward_complaints(ward_id: str) -> str:
         response.raise_for_status()
         data = response.json()
         if isinstance(data, list):
-            filtered_data = []
-            for c in data:
-                filtered_data.append({
-                    "id": c.get("id"),
-                    "type": c.get("issue_type"),
-                    "status": c.get("status"),
-                    "priority": c.get("priority_score"),
-                    "desc": c.get("text_input")
-                })
-            original_len = len(filtered_data)
-            data = filtered_data[:3]
-            if original_len > 3:
-                data.append({"info": f"({original_len - 3} more hidden)"})
+            original_len = len(data)
+            data = data[:10]
+            if original_len > 10:
+                data.append({"info": f"There are more records ({original_len - 10} hidden) not shown to save space."})
         return json.dumps(data)
     except Exception as e:
         return json.dumps([{"error": str(e)}])

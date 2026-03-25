@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const axios = require('axios');
-const { authenticateToken, restrictToRole, optionalAuthenticateToken } = require('../middleware/authMiddleware');const COMM_AI_URL = process.env.COMMUNICATION_AI_URL || 'http://unified-ai:8000';
+const { authenticateToken, restrictToRole, optionalAuthenticateToken } = require('../middleware/authMiddleware');const COMM_AI_URL = process.env.COMMUNICATION_AI_URL || 'http://unified-ai:7860';
 
 /**
  * GET /communication/updates/:complaintId
