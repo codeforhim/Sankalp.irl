@@ -258,7 +258,7 @@ const CitizenPortal = () => {
                                                 <p className="text-xs font-semibold text-[#9CA3AF] mb-1 uppercase">Before</p>
                                                 <div className="h-24 bg-[#EEF2F7] rounded-lg overflow-hidden border border-[#E5E7EB]">
                                                 {poll.before_image_url ? (
-                                                    <img src={poll.before_image_url.startsWith('http') ? poll.before_image_url : `http://localhost:5001${poll.before_image_url}`} alt="Before" className="w-full h-full object-cover" />
+                                                    <img src={poll.before_image_url.startsWith('http') ? poll.before_image_url : `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}${poll.before_image_url}`} alt="Before" className="w-full h-full object-cover" />
                                                 ) : <span className="text-xs flex items-center justify-center h-full text-gray-500">No Image</span>}
                                                 </div>
                                             </div>
@@ -266,7 +266,7 @@ const CitizenPortal = () => {
                                                 <p className="text-xs font-semibold text-[#138808] mb-1 uppercase">After (Claimed)</p>
                                                 <div className="h-24 bg-[#EEF2F7] rounded-lg overflow-hidden border border-[#138808]/30">
                                                 {poll.after_image_url ? (
-                                                    <img src={poll.after_image_url.startsWith('http') ? poll.after_image_url : `http://localhost:5001${poll.after_image_url}`} alt="After" className="w-full h-full object-cover" />
+                                                    <img src={poll.after_image_url.startsWith('http') ? poll.after_image_url : `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}${poll.after_image_url}`} alt="After" className="w-full h-full object-cover" />
                                                 ) : <span className="text-xs flex items-center justify-center h-full text-gray-500">No Image</span>}
                                                 </div>
                                             </div>

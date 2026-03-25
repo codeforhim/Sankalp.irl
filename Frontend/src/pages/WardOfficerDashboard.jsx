@@ -278,7 +278,7 @@ const WardOfficerDashboard = () => {
                                 <p className="text-xs font-semibold text-[#9CA3AF] mb-3 tracking-wider uppercase">Citizen Submitted Evidence</p>
                                 <div className="h-40 w-full bg-[#EEF2F7] rounded-lg overflow-hidden border border-[#E5E7EB] flex items-center justify-center">
                                     {selectedComplaint.image_url ? (
-                                        <img src={selectedComplaint.image_url.startsWith('http') ? selectedComplaint.image_url : `http://localhost:5001${selectedComplaint.image_url}`}
+                                        <img src={selectedComplaint.image_url.startsWith('http') ? selectedComplaint.image_url : `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}${selectedComplaint.image_url}`}
                                             alt="Before" className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="flex flex-col items-center text-[#9CA3AF]">

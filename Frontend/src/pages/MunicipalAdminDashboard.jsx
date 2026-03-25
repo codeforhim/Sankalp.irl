@@ -566,7 +566,7 @@ const MunicipalAdminDashboard = () => {
                                             <p className="text-xs font-semibold text-[#9CA3AF] mb-1 uppercase">Citizen "Before"</p>
                                             <div className="h-24 bg-[#EEF2F7] rounded-lg overflow-hidden border border-[#E5E7EB] flex items-center justify-center">
                                                 {complaint.image_url ? (
-                                                    <img src={complaint.image_url.startsWith('http') ? complaint.image_url : `http://localhost:5001${complaint.image_url}`}
+                                                    <img src={complaint.image_url.startsWith('http') ? complaint.image_url : `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}${complaint.image_url}`}
                                                         alt="Before" className="w-full h-full object-cover"
                                                         onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=No+Preview'; }} />
                                                 ) : <span className="text-xs text-[#9CA3AF]">No Image</span>}
@@ -576,7 +576,7 @@ const MunicipalAdminDashboard = () => {
                                             <p className="text-xs font-semibold text-[#DC2626] mb-1 uppercase">Officer "After"</p>
                                             <div className="h-24 bg-[#EEF2F7] rounded-lg overflow-hidden border border-[#DC2626]/20 flex items-center justify-center">
                                                 {complaint.after_image_url ? (
-                                                    <img src={complaint.after_image_url.startsWith('http') ? complaint.after_image_url : `http://localhost:5001${complaint.after_image_url}`}
+                                                    <img src={complaint.after_image_url.startsWith('http') ? complaint.after_image_url : `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}${complaint.after_image_url}`}
                                                         alt="After" className="w-full h-full object-cover"
                                                         onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Pending'; }} />
                                                 ) : <span className="text-xs font-bold text-[#DC2626]">AI PROCESSING...</span>}
