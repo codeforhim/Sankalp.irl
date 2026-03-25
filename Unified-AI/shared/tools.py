@@ -15,7 +15,22 @@ def get_user_complaints(user_id: str) -> str:
         headers = {"x-agent-secret": AGENT_SECRET, "x-agent-user-id": str(user_id), "x-agent-role": "user"}
         response = httpx.get(f"{BACKEND_URL}/complaints/my", headers=headers)
         response.raise_for_status()
-        return json.dumps(response.json())
+        data = response.json()
+        if isinstance(data, list):
+            filtered_data = []
+            for c in data:
+                filtered_data.append({
+                    "id": c.get("id"),
+                    "type": c.get("issue_type"),
+                    "status": c.get("status"),
+                    "priority": c.get("priority_score"),
+                    "desc": c.get("text_input")
+                })
+            original_len = len(filtered_data)
+            data = filtered_data[:3]
+            if original_len > 3:
+                data.append({"info": f"({original_len - 3} more hidden)"})
+        return json.dumps(data)
     except Exception as e:
         return json.dumps([{"error": str(e)}])
 
@@ -42,7 +57,22 @@ def get_ward_complaints(ward_id: str) -> str:
         headers = {"x-agent-secret": AGENT_SECRET, "x-agent-role": "ward_staff"}
         response = httpx.get(f"{BACKEND_URL}/complaints/ward/{ward_id}", headers=headers)
         response.raise_for_status()
-        return json.dumps(response.json())
+        data = response.json()
+        if isinstance(data, list):
+            filtered_data = []
+            for c in data:
+                filtered_data.append({
+                    "id": c.get("id"),
+                    "type": c.get("issue_type"),
+                    "status": c.get("status"),
+                    "priority": c.get("priority_score"),
+                    "desc": c.get("text_input")
+                })
+            original_len = len(filtered_data)
+            data = filtered_data[:3]
+            if original_len > 3:
+                data.append({"info": f"({original_len - 3} more hidden)"})
+        return json.dumps(data)
     except Exception as e:
         return json.dumps([{"error": str(e)}])
 
@@ -66,7 +96,16 @@ def get_priority_complaints(ward_id: str) -> str:
         data = response.json()
         if isinstance(data, list):
             # Sort mock prioritization to retrieve top 5 pending
-            return json.dumps(sorted([c for c in data if c.get("status") != "resolved"], key=lambda x: x.get("priority_score", 0), reverse=True)[:5])
+            top_5 = sorted([c for c in data if c.get("status") != "resolved"], key=lambda x: x.get("priority_score", 0), reverse=True)[:5]
+            filtered = []
+            for c in top_5:
+                filtered.append({
+                    "id": c.get("id"),
+                    "type": c.get("issue_type"),
+                    "status": c.get("status"),
+                    "priority": c.get("priority_score")
+                })
+            return json.dumps(filtered)
         return json.dumps([{"error": "Unexpected format"}])
     except Exception as e:
         return json.dumps([{"error": str(e)}])
@@ -91,6 +130,31 @@ def get_public_updates() -> str:
         headers = {"x-agent-secret": AGENT_SECRET}
         response = httpx.get(f"{BACKEND_URL}/communication/public-feed", headers=headers)
         response.raise_for_status()
-        return json.dumps(response.json())
+        data = response.json()
+        if isinstance(data, dict) and "updates" in data and isinstance(data["updates"], list):
+            updates_list = data["updates"]
+            filtered = []
+            for u in updates_list:
+                filtered.append({
+                    "id": u.get("id"),
+                    "type": u.get("update_type"),
+                    "message": u.get("message")
+                })
+            original_len = len(filtered)
+            data["updates"] = filtered[:3]
+            if original_len > 3:
+                data["updates"].append({"info": f"({original_len - 3} more hidden)"})
+        elif isinstance(data, list):
+            filtered = []
+            for u in data:
+                filtered.append({
+                    "id": u.get("id"),
+                    "message": u.get("message")
+                })
+            original_len = len(filtered)
+            data = filtered[:3]
+            if original_len > 3:
+                data.append({"info": f"({original_len - 3} more hidden)"})
+        return json.dumps(data)
     except Exception as e:
         return json.dumps([{"error": str(e)}])
